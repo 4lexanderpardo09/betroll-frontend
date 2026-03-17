@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #0a0a0f;
+  color: white;
+}
+
+/* React Datepicker - BetRoll Theme */
+.react-datepicker {
+  font-family: inherit;
+  background-color: #1a1a24;
+  border: 1px solid #2a2a35;
+  border-radius: 8px;
+}
+
+.react-datepicker__header {
+  background-color: #111118;
+  border-bottom: 1px solid #2a2a35;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name,
+.react-datepicker__day {
+  color: #e5e5e5;
+}
+
+.react-datepicker__day:hover {
+  background-color: #2a2a35;
+  border-radius: 4px;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--in-range {
+  background-color: #f5c842 !important;
+  color: #0a0a0f !important;
+  border-radius: 4px;
+}
+
+.react-datepicker__day--keyboard-selected {
+  background-color: #f5c842;
+  color: #0a0a0f;
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: #9ca3af;
+}
+
+.react-datepicker__navigation:hover *::before {
+  border-color: white;
+}
+
+.react-datepicker__time-container {
+  background-color: #111118;
+  border-left: 1px solid #2a2a35;
+}
+
+.react-datepicker__time-box {
+  background-color: #111118;
+}
+
+.react-datepicker__time-list-item {
+  color: #e5e5e5;
+}
+
+.react-datepicker__time-list-item:hover {
+  background-color: #2a2a35;
+}
+
+.react-datepicker__time-list-item--selected {
+  background-color: #f5c842 !important;
+  color: #0a0a0f !important;
+}
+
+.react-datepicker__input-container input {
+  background-color: #111118;
+  border: 1px solid #2a2a35;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.react-datepicker__input-container input:focus {
+  outline: none;
+  border-color: #f5c842;
+}
+
