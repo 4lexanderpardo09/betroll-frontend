@@ -38,6 +38,7 @@ interface BetState {
   fetchStats: () => Promise<void>;
   setFilters: (filters: BetFilters) => void;
   clearError: () => void;
+  clearBets: () => void;
 }
 
 export const useBetStore = create<BetState>((set, get) => ({
