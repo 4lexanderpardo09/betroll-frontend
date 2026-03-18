@@ -20,7 +20,7 @@ const betSchema = z.object({
   selection: z.string().min(1, 'La selección es requerida'),
   odds: z.number().min(1.01, 'La cuota debe ser mayor a 1.0'),
   amount: z.number().min(1000, 'El monto mínimo es 1000 COP'),
-  confidence: z.number().min(1).max(5).optional(),
+  percentage: z.number().min(0).max(5).optional(),
   reasoning: z.string().optional(),
 });
 
@@ -61,36 +61,31 @@ export function CreateBet() {
   const [showAIPromptModal, setShowAIPromptModal] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
 
-  // Confidence percentages - inverted scale
-  // 5 = Muy Alta (5%), 4 = Alta (3%), 3 = Media (2%), 2 = Baja (1%), 1 = Muy Baja (0% - no bet)
-  const confidencePercentages: Record<number, number> = {
-    1: 0,
-    2: 0.01,
-    3: 0.02,
-    4: 0.03,
-    5: 0.05,
-  };
+  // Percentage options for bankroll
+  const percentageOptions = [
+    { value: 0, label: '0%' },
+    { value: 0.5, label: '0.5%' },
+    { value: 1, label: '1%' },
+    { value: 1.5, label: '1.5%' },
+    { value: 2, label: '2%' },
+    { value: 2.5, label: '2.5%' },
+    { value: 3, label: '3%' },
+    { value: 3.5, label: '3.5%' },
+    { value: 4, label: '4%' },
+    { value: 4.5, label: '4.5%' },
+    { value: 5, label: '5%' },
+  ];
 
-  const confidenceLabels: Record<number, string> = {
-    1: 'Muy Baja - No apuestas',
-    2: 'Baja',
-    3: 'Media',
-    4: 'Alta',
-    5: 'Muy Alta',
-  };
-
-  const getRecommendedAmount = (confidence: number) => {
+  const getRecommendedAmount = (percentage: number) => {
     if (!bankroll) return 0;
-    const percentage = confidencePercentages[confidence] || 0;
-    return Math.round(bankroll.currentAmount * percentage);
+    return Math.round(bankroll.currentAmount * (percentage / 100));
   };
 
-  const isVeryLowConfidence = (confidence: number) => confidence === 1;
-
-  const isAmountRecommended = (amount: number, confidence: number) => {
-    const recommended = getRecommendedAmount(confidence);
-    const tolerance = recommended * 0.1; // 10% tolerance
-    return Math.abs(amount - recommended) <= tolerance;
+  const getCategoryFromPercentage = (percentage: number): 'A' | 'B' | 'C' | null => {
+    if (percentage >= 3) return 'A';
+    if (percentage >= 1.5) return 'B';
+    if (percentage >= 0.5) return 'C';
+    return null;
   };
 
   useEffect(() => {
@@ -108,14 +103,14 @@ export function CreateBet() {
     defaultValues: {
       sport: 'FOOTBALL',
       betType: 'HOME_WIN',
-      confidence: 3,
+      percentage: 1,
       amount: 10000,
     },
   });
 
   const watchOdds = watch('odds');
   const watchAmount = watch('amount');
-  const watchConfidence = watch('confidence') || 3;
+  const watchPercentage = watch('percentage') || 1;
 
   useEffect(() => {
     const odds = Number(watchOdds) || 0;
@@ -125,10 +120,9 @@ export function CreateBet() {
     const potential = Math.round((amount * odds) - amount);
     setPotentialWin(potential);
 
-    // Calculate category
-    if (odds <= 1.5) setCategory('A');
-    else if (odds <= 2.2) setCategory('B');
-    else setCategory('C');
+    // Calculate category based on percentage
+    const calculatedCategory = getCategoryFromPercentage(watchPercentage);
+    setCategory(calculatedCategory || 'B');
 
     // Check stop-loss (simple warning based on bankroll)
     if (bankroll && amount > bankroll.currentAmount * 0.3) {
@@ -144,9 +138,12 @@ export function CreateBet() {
       return;
     }
     
-    // Check if amount is recommended
-    const confidence = data.confidence || 3;
-    if (!isAmountRecommended(data.amount, confidence)) {
+    // Check if amount is recommended based on percentage
+    const recommendedAmount = getRecommendedAmount(data.percentage || 1);
+    const tolerance = recommendedAmount * 0.2; // 20% tolerance
+    const isRecommended = Math.abs(data.amount - recommendedAmount) <= tolerance;
+    
+    if (!isRecommended && (data.percentage || 1) > 0) {
       setPendingData(data);
       setShowConfirmModal(true);
       return;
@@ -382,44 +379,47 @@ export function CreateBet() {
           </div>
         </div>
 
-        {/* Confidence */}
+        {/* Percentage of Bankroll */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-1">
-            Confianza: <span className="text-gold">{confidenceLabels[watchConfidence]}</span> 
-            <span className="text-gray-500 text-xs ml-2">
-              ({(confidencePercentages[watchConfidence] * 100).toFixed(0)}% del bankroll)
-            </span>
+            Porcentaje del Bankroll
+            <span className="text-gold ml-2">{watchPercentage}%</span>
           </label>
-          <input
-            type="range"
-            min="1"
-            max="5"
-            {...register('confidence', { valueAsNumber: true })}
-            className="w-full"
-          />
-          <div className="flex justify-between text-xs text-gray-500">
-            <span>Muy Baja (0%)</span>
-            <span>Muy Alta (5%)</span>
-          </div>
+          <select
+            {...register('percentage', { valueAsNumber: true })}
+            className="w-full bg-bg-secondary border border-border-dark rounded-lg px-4 py-2 text-white"
+          >
+            {percentageOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
           
-          {/* Warning for very low confidence */}
-          {isVeryLowConfidence(watchConfidence) && (
-            <div className="mt-2 bg-red-900/30 border border-red-500 rounded-lg p-3 text-center">
-              <span className="text-red-400 text-sm font-medium">❌ No apuestas - Confianza muy baja</span>
+          {/* Category indicator */}
+          {watchPercentage > 0 && (
+            <div className="mt-2 flex items-center justify-center">
+              <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                watchPercentage >= 3 ? 'bg-green-900/50 text-green-400' :
+                watchPercentage >= 1.5 ? 'bg-yellow-900/50 text-yellow-400' :
+                'bg-blue-900/50 text-blue-400'
+              }`}>
+                Categoría {getCategoryFromPercentage(watchPercentage) || '-'}
+              </span>
             </div>
           )}
           
-          {bankroll && !isVeryLowConfidence(watchConfidence) && (
+          {bankroll && (
             <div className="mt-3">
               <button
                 type="button"
                 onClick={() => {
-                  const recommended = getRecommendedAmount(watchConfidence);
+                  const recommended = getRecommendedAmount(watchPercentage);
                   setValue('amount', recommended);
                 }}
                 className="w-full bg-gold/10 hover:bg-gold/20 border border-gold/30 text-gold py-2 px-4 rounded-lg text-sm font-medium transition-colors"
               >
-                🎯 Aplicar monto recomendado: {formatCOP(getRecommendedAmount(watchConfidence))}
+                🎯 Aplicar monto recomendado: {formatCOP(getRecommendedAmount(watchPercentage))}
               </button>
             </div>
           )}
@@ -464,10 +464,10 @@ export function CreateBet() {
           </button>
           <button
             type="submit"
-            disabled={loading || !bankroll || isVeryLowConfidence(watchConfidence)}
+            disabled={loading || !bankroll || watchPercentage === 0}
             className="flex-1 bg-gold hover:bg-yellow-500 text-black py-3 rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Creando...' : isVeryLowConfidence(watchConfidence) ? 'No puedes apost...' : 'Crear Apuesta'}
+            {loading ? 'Creando...' : watchPercentage === 0 ? 'Selecciona un %' : 'Crear Apuesta'}
           </button>
         </div>
       </form>
@@ -478,8 +478,8 @@ export function CreateBet() {
           <div className="bg-bg-card border border-border-dark rounded-xl p-6 max-w-md mx-4">
             <h3 className="text-xl font-bold text-white mb-4">⚠️ Monto no recomendado</h3>
             <p className="text-gray-300 mb-4">
-              Estás apostando un monto que no coincide con la confianza seleccionada ({watchConfidence}).
-              El monto recomendado para esta confianza es <span className="text-gold font-bold">{formatCOP(getRecommendedAmount(watchConfidence))}</span>.
+              Estás apostando un monto que no coincide con el porcentaje seleccionado ({watchPercentage}%).
+              El monto recomendado para este porcentaje es <span className="text-gold font-bold">{formatCOP(getRecommendedAmount(watchPercentage))}</span>.
             </p>
             <p className="text-gray-400 text-sm mb-6">
               Esto puede afectar tu gestión del bankroll a largo plazo. ¿Estás seguro de continuar?
