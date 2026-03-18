@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { bankrollApi, Bankroll, BankrollMovement } from '../api/bankroll';
+import { registerLogoutAction } from './authStore';
 
 interface BankrollState {
   bankroll: Bankroll | null;
@@ -14,7 +15,10 @@ interface BankrollState {
   deposit: (amount: number, description?: string) => Promise<boolean>;
   withdraw: (amount: number, description?: string) => Promise<boolean>;
   fetchMovements: (page?: number) => Promise<void>;
+  clearBankroll: () => void;
 }
+
+registerLogoutAction(() => useBankrollStore.getState().clearBankroll());
 
 export const useBankrollStore = create<BankrollState>((set, get) => ({
   bankroll: null,
@@ -111,5 +115,15 @@ export const useBankrollStore = create<BankrollState>((set, get) => ({
         error: error.response?.data?.message || 'Error al obtener movimientos',
       });
     }
+  },
+
+  clearBankroll: () => {
+    set({ 
+      bankroll: null, 
+      movements: [], 
+      totalMovements: 0, 
+      loading: false, 
+      error: null 
+    });
   },
 }));

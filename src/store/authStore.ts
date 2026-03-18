@@ -17,6 +17,12 @@ interface AuthState {
   clearAuth: () => void
 }
 
+const logoutActions: (() => void)[] = []
+
+export const registerLogoutAction = (action: () => void) => {
+  logoutActions.push(action)
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -24,13 +30,23 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       isAuthenticated: false,
       
-      setAuth: (user, accessToken) => set({ user, accessToken, isAuthenticated: true }),
+      setAuth: (user, accessToken) => {
+        // Clear other stores when login (new user or different user)
+        logoutActions.forEach(action => action())
+        set({ user, accessToken, isAuthenticated: true })
+      },
       
       setAccessToken: (accessToken) => set({ accessToken }),
       
-      logout: () => set({ user: null, accessToken: null, isAuthenticated: false }),
+      logout: () => {
+        logoutActions.forEach(action => action())
+        set({ user: null, accessToken: null, isAuthenticated: false })
+      },
       
-      clearAuth: () => set({ user: null, accessToken: null, isAuthenticated: false }),
+      clearAuth: () => {
+        logoutActions.forEach(action => action())
+        set({ user: null, accessToken: null, isAuthenticated: false })
+      },
     }),
     {
       name: 'betroll-auth',

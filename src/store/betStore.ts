@@ -13,6 +13,7 @@ import {
   ResolveBetDto,
   BetStats,
 } from '../api/bets';
+import { registerLogoutAction } from './authStore';
 
 interface BetState {
   bets: Bet[];
@@ -164,4 +165,16 @@ export const useBetStore = create<BetState>((set, get) => ({
   },
 
   clearError: () => set({ error: null }),
+  
+  clearBets: () => set({
+    bets: [],
+    currentBet: null,
+    pendingBets: [],
+    stats: null,
+    pagination: { page: 1, limit: 20, total: 0 },
+    loading: false,
+    error: null,
+  }),
 }));
+
+registerLogoutAction(() => useBetStore.getState().clearBets());
