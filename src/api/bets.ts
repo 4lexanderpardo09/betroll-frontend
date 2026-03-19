@@ -51,6 +51,18 @@ export interface ResolveBetDto {
   postNotes?: string
 }
 
+export interface UpdateBetDto {
+  tournament?: string
+  homeTeam?: string
+  awayTeam?: string
+  eventDate?: string
+  betType?: BetType
+  selection?: string
+  odds?: number
+  amount?: number
+  reasoning?: string
+}
+
 export interface BetFilters {
   sport?: Sport
   status?: BetStatus
@@ -109,6 +121,11 @@ export const createBet = async (dto: CreateBetDto): Promise<Bet> => {
 
 export const resolveBet = async (id: string, dto: ResolveBetDto): Promise<Bet> => {
   const { data } = await api.patch(`/bets/${id}/resolve`, dto)
+  return data.data
+}
+
+export const updateBet = async (id: string, dto: UpdateBetDto): Promise<Bet> => {
+  const { data } = await api.patch(`/bets/${id}`, dto)
   return data.data
 }
 

@@ -6,6 +6,7 @@ interface BetCardProps {
   bet: Bet;
   onResolve?: (id: string) => void;
   onDelete?: (id: string) => void;
+  onEdit?: (id: string) => void;
 }
 
 const sportIcons: Record<string, string> = {
@@ -29,7 +30,7 @@ const categoryColors: Record<string, string> = {
   C: 'bg-red-600',
 };
 
-export function BetCard({ bet, onResolve, onDelete }: BetCardProps) {
+export function BetCard({ bet, onResolve, onDelete, onEdit }: BetCardProps) {
   const [showResolve, setShowResolve] = useState(false);
 
   const statusLabel: Record<string, string> = {
@@ -128,6 +129,14 @@ export function BetCard({ bet, onResolve, onDelete }: BetCardProps) {
           >
             Resolver
           </button>
+          {onEdit && (
+            <button
+              onClick={() => onEdit(bet.id)}
+              className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-3 rounded text-sm font-medium transition-colors"
+            >
+              Editar
+            </button>
+          )}
           <button
             onClick={() => onDelete && onDelete(bet.id)}
             className="bg-red-600 hover:bg-red-700 text-white py-2 px-3 rounded text-sm font-medium transition-colors"

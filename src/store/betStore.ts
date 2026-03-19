@@ -4,6 +4,7 @@ import {
   getBet,
   createBet,
   resolveBet,
+  updateBet,
   deleteBet,
   getPendingBets,
   getBetStats,
@@ -11,6 +12,7 @@ import {
   BetFilters,
   CreateBetDto,
   ResolveBetDto,
+  UpdateBetDto,
   BetStats,
 } from '../api/bets';
 import { registerLogoutAction } from './authStore';
@@ -33,6 +35,7 @@ interface BetState {
   fetchBet: (id: string) => Promise<void>;
   createBet: (dto: CreateBetDto) => Promise<boolean>;
   resolveBet: (id: string, dto: ResolveBetDto) => Promise<boolean>;
+  updateBet: (id: string, dto: UpdateBetDto) => Promise<boolean>;
   removeBet: (id: string) => Promise<boolean>;
   fetchPendingBets: () => Promise<void>;
   fetchStats: () => Promise<void>;
@@ -116,6 +119,21 @@ export const useBetStore = create<BetState>((set, get) => ({
     } catch (error: any) {
       set({
         error: error.response?.data?.message || 'Error al resolver apuesta',
+        loading: false,
+      });
+      return false;
+    }
+  },
+
+  updateBet: async (id: string, dto: UpdateBetDto) => {
+    set({ loading: true, error: null });
+    try {
+      await updateBet(id, dto);
+      await get().fetchBets(get().pagination.page);
+      return true;
+    } catch (error: any) {
+      set({
+        error: error.response?.data?.message || 'Error al actualizar apuesta',
         loading: false,
       });
       return false;

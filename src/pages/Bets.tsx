@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useBetStore } from '../store/betStore';
 import { useBankrollStore } from '../store/bankrollStore';
 import { BetCard } from '../components/BetCard';
 import { formatCOP } from '../utils/formatCOP';
-import { BetStatus } from '../api/bets';
+import { Bet, BetStatus, BetType, Sport, UpdateBetDto } from '../api/bets';
 
 export function Bets() {
   const {
@@ -17,6 +20,7 @@ export function Bets() {
     fetchBets,
     fetchStats,
     resolveBet,
+    updateBet,
     removeBet,
     setFilters,
     clearError,
@@ -25,6 +29,22 @@ export function Bets() {
 
   const [selectedBet, setSelectedBet] = useState<string | null>(null);
   const [resolveStatus, setResolveStatus] = useState<BetStatus>('WON');
+  const [editingBet, setEditingBet] = useState<Bet | null>(null);
+
+  const editBetSchema = z.object({
+    tournament: z.string().min(1, 'El torneo es requerido'),
+    homeTeam: z.string().min(1, 'El equipo local es requerido'),
+    awayTeam: z.string().min(1, 'El equipo visitante es requerido'),
+    betType: z.enum(['HOME_WIN', 'AWAY_WIN', 'DRAW', 'DOUBLE_CHANCE_HOME', 'DOUBLE_CHANCE_AWAY', 'BTTS_YES', 'BTTS_NO', 'OVER', 'UNDER', 'HANDICAP', 'OTHER']),
+    selection: z.string().min(1, 'La selección es requerida'),
+    odds: z.number().min(1.01, 'La cuota debe ser mayor a 1.0'),
+    amount: z.number().min(500, 'El monto mínimo es 500 COP'),
+    reasoning: z.string().optional(),
+  });
+
+  const editForm = useForm<z.infer<typeof editBetSchema>>({
+    resolver: zodResolver(editBetSchema),
+  });
 
   useEffect(() => {
     fetchBets();
@@ -39,6 +59,35 @@ export function Bets() {
   const handleResolve = (betId: string) => {
     setSelectedBet(betId);
     setResolveStatus('WON');
+  };
+
+  const handleEdit = (betId: string) => {
+    const bet = bets.find(b => b.id === betId);
+    if (bet) {
+      setEditingBet(bet);
+      editForm.reset({
+        tournament: bet.tournament,
+        homeTeam: bet.homeTeam,
+        awayTeam: bet.awayTeam,
+        betType: bet.betType,
+        selection: bet.selection,
+        odds: bet.odds,
+        amount: bet.amount,
+        reasoning: bet.reasoning || '',
+      });
+    }
+  };
+
+  const handleConfirmEdit = async () => {
+    if (editingBet) {
+      const data = editForm.getValues();
+      const success = await updateBet(editingBet.id, data);
+      if (success) {
+        setEditingBet(null);
+        editForm.reset();
+        fetchBankroll();
+      }
+    }
   };
 
   const handleConfirmResolve = async () => {
@@ -239,6 +288,7 @@ export function Bets() {
                 key={bet.id}
                 bet={bet}
                 onResolve={handleResolve}
+                onEdit={handleEdit}
                 onDelete={handleDelete}
               />
             ))}
@@ -331,6 +381,117 @@ export function Bets() {
                 Confirmar
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingBet && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50">
+          <div className="bg-bg-card border border-border-dark rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-white mb-4">Editar Apuesta</h3>
+            <form onSubmit={editForm.handleSubmit(handleConfirmEdit)} className="space-y-4">
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Torneo</label>
+                <input
+                  {...editForm.register('tournament')}
+                  className="w-full bg-bg-secondary border border-border-dark rounded-lg px-3 py-2 text-white"
+                />
+                {editForm.formState.errors.tournament && (
+                  <p className="text-red-400 text-sm mt-1">{editForm.formState.errors.tournament.message}</p>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Equipo Local</label>
+                  <input
+                    {...editForm.register('homeTeam')}
+                    className="w-full bg-bg-secondary border border-border-dark rounded-lg px-3 py-2 text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Equipo Visitante</label>
+                  <input
+                    {...editForm.register('awayTeam')}
+                    className="w-full bg-bg-secondary border border-border-dark rounded-lg px-3 py-2 text-white"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Tipo de Apuesta</label>
+                <select
+                  {...editForm.register('betType')}
+                  className="w-full bg-bg-secondary border border-border-dark rounded-lg px-3 py-2 text-white"
+                >
+                  <option value="HOME_WIN">Victoria Local</option>
+                  <option value="AWAY_WIN">Victoria Visitante</option>
+                  <option value="DRAW">Empate</option>
+                  <option value="DOUBLE_CHANCE_HOME">Doble Oportunidad Local</option>
+                  <option value="DOUBLE_CHANCE_AWAY">Doble Oportunidad Visitante</option>
+                  <option value="BTTS_YES">Ambos Marcan - Sí</option>
+                  <option value="BTTS_NO">Ambos Marcan - No</option>
+                  <option value="OVER">Over</option>
+                  <option value="UNDER">Under</option>
+                  <option value="HANDICAP">Handicap</option>
+                  <option value="OTHER">Otro</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Selección</label>
+                <input
+                  {...editForm.register('selection')}
+                  className="w-full bg-bg-secondary border border-border-dark rounded-lg px-3 py-2 text-white"
+                />
+                {editForm.formState.errors.selection && (
+                  <p className="text-red-400 text-sm mt-1">{editForm.formState.errors.selection.message}</p>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Cuota</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    {...editForm.register('odds', { valueAsNumber: true })}
+                    className="w-full bg-bg-secondary border border-border-dark rounded-lg px-3 py-2 text-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-gray-400 mb-1">Monto (COP)</label>
+                  <input
+                    type="number"
+                    {...editForm.register('amount', { valueAsNumber: true })}
+                    className="w-full bg-bg-secondary border border-border-dark rounded-lg px-3 py-2 text-white"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm text-gray-400 mb-1">Razonamiento (opcional)</label>
+                <textarea
+                  {...editForm.register('reasoning')}
+                  rows={2}
+                  className="w-full bg-bg-secondary border border-border-dark rounded-lg px-3 py-2 text-white"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingBet(null);
+                    editForm.reset();
+                  }}
+                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-3 rounded-lg font-medium"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-3 rounded-lg font-bold"
+                >
+                  Guardar
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

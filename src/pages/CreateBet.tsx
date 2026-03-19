@@ -63,6 +63,7 @@ export function CreateBet() {
   const [pendingData, setPendingData] = useState<BetFormData | null>(null);
   const [showAIPromptModal, setShowAIPromptModal] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
+  const [sliderPercentage, setSliderPercentage] = useState(1);
 
   const getRecommendedAmount = (percentage: number) => {
     if (!bankroll) return 0;
@@ -100,7 +101,7 @@ export function CreateBet() {
 
   const watchOdds = watch('odds');
   const watchAmount = watch('amount');
-  const watchPercentage = Number(watch('percentage')) || 1;
+  const watchPercentage = sliderPercentage;
 
   useEffect(() => {
     const odds = Number(watchOdds) || 0;
@@ -383,6 +384,7 @@ export function CreateBet() {
             value={watchPercentage}
             onChange={(e) => {
               const value = parseFloat(e.target.value);
+              setSliderPercentage(value);
               setValue('percentage', value, { shouldValidate: true });
             }}
             className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer"
