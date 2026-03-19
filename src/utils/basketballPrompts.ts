@@ -399,6 +399,51 @@ PROPS DE JUGADORES:
 | Over X PRA        |         |     %     |       |    | ✅/❌   |
 
 ───────────────────────────────────────
+⚠️ FILTROS ANTI-ERROR OBLIGATORIOS (aplicar ANTES de confirmar cualquier apuesta)
+───────────────────────────────────────
+
+FILTRO 1 — PROXIMIDAD DE LÍNEA EN TOTALES O/U
+El modelo tiene un margen de incertidumbre de ±5 puntos. Si el total
+proyectado está a menos de 4 puntos de la línea O/U, el EV real es
+significativamente menor al calculado porque el rango de incertidumbre
+cruza la línea.
+
+  → Calcular: |total_proyectado - linea_OU|
+  → Si la diferencia es < 4 pts → reducir stake al 50% o NO APOSTAR
+  → Si la diferencia es < 2 pts → NO APOSTAR bajo ninguna circunstancia
+  → Reportar explícitamente: "Proximidad: X.X pts — [APTA / REDUCIR 50% / BLOQUEADA]"
+
+FILTRO 2 — CORRELACIÓN ENTRE APUESTAS DEL MISMO PARTIDO
+Antes de recomendar 2 o más apuestas simultáneas en el mismo partido,
+mapear el escenario de juego que las hace ganar a ambas. Si ese escenario
+es contradictorio, las apuestas se cancelan mutuamente y no deben
+recomendarse juntas.
+
+  Ejemplos de correlaciones NEGATIVAS (incompatibles — nunca recomendar juntas):
+  - Under total + Over rebotes/puntos de jugador del equipo ganador proyectado
+    (blowout → el favorito retira titulares en C4 → el jugador pierde 6-9 min)
+  - Under total + Over asistencias de un PG que necesita ritmo alto para asistir
+  - Visitante cubre spread + Over puntos del jugador estrella del local
+
+  Ejemplos de correlaciones POSITIVAS (compatibles — pueden recomendarse juntas):
+  - Under total + Under puntos del jugador estrella del equipo con menor proyección
+  - Over total + Over puntos del jugador del equipo más ofensivo
+  - Local gana ML + Over puntos de la estrella del local
+
+  → Para cada par de apuestas a recomendar, declarar explícitamente:
+    "Correlación: POSITIVA / NEGATIVA / NEUTRA — [apta / incompatible]"
+  → Si la correlación es NEGATIVA → eliminar una de las dos apuestas
+    (preferir la de mayor EV ajustado)
+
+  CASO ESPECIAL — BLOWOUT RISK EN PROPS DE ROTACIÓN:
+  Si el spread del partido es ≥ 10 puntos, aplicar penalización automática
+  a las props de rebotes, puntos y minutos de jugadores de rotación media
+  (no estrellas) del equipo favorito:
+  → Restar 1.5 unidades a la proyección del jugador (efecto cuarto de blowout)
+  → Solo recomendar la prop si, después de aplicar la penalización,
+    el promedio ajustado sigue superando la línea en al menos +1.0 unidades
+
+───────────────────────────────────────
 1️⃣9️⃣ PREDICCIÓN FINAL
 ───────────────────────────────────────
 - Ganador probable + argumentos clave (top 3 razones)
@@ -420,16 +465,29 @@ APUESTA 1 — [nombre detallado]
 → Prob Real: %
 → EV: +X.XX
 → Categoría: A / B / C
+→ Proximidad línea: X.X pts — [APTA / REDUCIR 50% / BLOQUEADA]  ← nuevo
+→ Correlación con otras apuestas: POSITIVA / NEGATIVA / NEUTRA    ← nuevo
 → Argumento principal (2-3 líneas)
 
 APUESTA 2 — [nombre detallado]
-→ Tipo / Mercado / Cuota / Prob / EV / Categoría / Argumento
+→ Tipo / Mercado / Cuota / Prob / EV / Categoría
+→ Proximidad línea: X.X pts — [APTA / REDUCIR 50% / BLOQUEADA]
+→ Correlación con otras apuestas: POSITIVA / NEGATIVA / NEUTRA
+→ Argumento
 
 APUESTA 3 — [nombre detallado] (solo si EV > 0.05)
-→ Tipo / Mercado / Cuota / Prob / EV / Categoría / Argumento
+→ Tipo / Mercado / Cuota / Prob / EV / Categoría
+→ Proximidad línea: X.X pts — [APTA / REDUCIR 50% / BLOQUEADA]
+→ Correlación con otras apuestas: POSITIVA / NEGATIVA / NEUTRA
+→ Argumento
 
 PROP BET DESTACADA — [jugador + mercado]
-→ Tipo / Cuota / Prob / EV / Argumento
+→ Tipo / Cuota / Prob / EV
+→ Promedio jugador vs línea: +X.X unidades (mínimo requerido: +1.0)
+→ Blowout risk (spread ≥10): SÍ aplica penalización / NO aplica
+→ Proyección ajustada: X.X unidades sobre/bajo línea tras penalización
+→ Correlación con apuesta principal: POSITIVA / NEGATIVA / NEUTRA
+→ Argumento
 
 ⛔ Si ninguna EV > 0.05: "NO HAY VALUE HOY — NO APOSTAR"
 
@@ -446,6 +504,10 @@ PROPS (menor certeza)       → máx 1% = ${formatCOP(data.bankrollAmount * 0.01
 
 REGLA: No superar 10% del bankroll en total por partido.
 REGLA: Máximo 3 apuestas simultáneas en el mismo partido.
+REGLA: Si el filtro de proximidad activa "REDUCIR 50%", aplicar ese recorte
+       al monto calculado por categoría antes de apostar.
+REGLA: Si dos apuestas tienen correlación NEGATIVA, conservar solo la de
+       mayor EV ajustado y descartar la otra.
 
 ───────────────────────────────────────
 2️⃣2️⃣ RESUMEN EJECUTIVO FINAL
@@ -459,6 +521,7 @@ REGLA: Máximo 3 apuestas simultáneas en el mismo partido.
 ║ CUOTA:                                   ║
 ║ PROBABILIDAD REAL:                       ║
 ║ EV:                                      ║
+║ PROXIMIDAD LÍNEA:   X.X pts — [estado]   ║
 ║ CONFIANZA: baja / media / alta           ║
 ║ CATEGORÍA: A / B / C                     ║
 ║ MONTO:                                   ║
@@ -470,6 +533,9 @@ REGLA: Máximo 3 apuestas simultáneas en el mismo partido.
 ║ CUOTA:                                   ║
 ║ PROBABILIDAD REAL:                       ║
 ║ EV:                                      ║
+║ MARGEN VS LÍNEA:    +X.X u. (mín. +1.0) ║
+║ BLOWOUT RISK:       SÍ / NO              ║
+║ CORRELACIÓN APUESTA PRINCIPAL: +/-/NEU   ║
 ║ MONTO: máx 1% = ${formatCOP(data.bankrollAmount * 0.01).padEnd(20)} ║
 ╚══════════════════════════════════════════╝`;
 };
