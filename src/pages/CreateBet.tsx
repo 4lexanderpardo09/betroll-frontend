@@ -11,6 +11,9 @@ import { formatCOP } from '../utils/formatCOP';
 import { generatePrompt } from '../utils/prompts';
 import { Sport, BetType } from '../api/bets';
 
+// Workaround for DatePicker type issue
+const DatePickerWrapper = DatePicker as unknown as React.ComponentType<any>;
+
 const betSchema = z.object({
   sport: z.enum(['FOOTBALL', 'TENNIS', 'BASKETBALL', 'OTHER']),
   tournament: z.string().min(1, 'El tournament es requerido'),
@@ -61,21 +64,6 @@ export function CreateBet() {
   const [showAIPromptModal, setShowAIPromptModal] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
 
-  // Percentage options for bankroll
-  const percentageOptions = [
-    { value: 0, label: '0%' },
-    { value: 0.5, label: '0.5%' },
-    { value: 1, label: '1%' },
-    { value: 1.5, label: '1.5%' },
-    { value: 2, label: '2%' },
-    { value: 2.5, label: '2.5%' },
-    { value: 3, label: '3%' },
-    { value: 3.5, label: '3.5%' },
-    { value: 4, label: '4%' },
-    { value: 4.5, label: '4.5%' },
-    { value: 5, label: '5%' },
-  ];
-
   const getRecommendedAmount = (percentage: number) => {
     if (!bankroll) return 0;
     return Math.round(bankroll.currentAmount * (percentage / 100));
@@ -86,10 +74,6 @@ export function CreateBet() {
     if (percentage >= 1.5) return 'B';
     if (percentage >= 0.5) return 'C';
     return null;
-  };
-
-  const isValidPercentage = (value: number): boolean => {
-    return [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].includes(value);
   };
 
   useEffect(() => {
@@ -103,10 +87,12 @@ export function CreateBet() {
     setValue,
     formState: { errors },
   } = useForm<BetFormData>({
+    // @ts-ignore - Zod version compatibility issue
     resolver: zodResolver(betSchema),
     defaultValues: {
       sport: 'FOOTBALL',
       betType: 'HOME_WIN',
+      odds: 1.5,
       percentage: 1,
       amount: 10000,
     },
@@ -120,8 +106,8 @@ export function CreateBet() {
     const odds = Number(watchOdds) || 0;
     const amount = Number(watchAmount) || 0;
 
-    // Calculate potential win
-    const potential = Math.round((amount * odds) - amount);
+    // Calculate potential win: (amount * odds) - amount = amount * (odds - 1)
+    const potential = amount > 0 && odds > 1 ? Math.round(amount * (odds - 1)) : 0;
     setPotentialWin(potential);
 
     // Calculate category based on percentage
@@ -134,7 +120,7 @@ export function CreateBet() {
     } else {
       setStopLossWarning(null);
     }
-  }, [watchOdds, watchAmount, bankroll]);
+  }, [watchOdds, watchAmount, watchPercentage, bankroll]);
 
   const onSubmit = async (data: BetFormData) => {
     if (!eventDate) {
@@ -307,7 +293,7 @@ export function CreateBet() {
         {/* Event Date */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-1">Fecha del Evento</label>
-          <DatePicker
+          <DatePickerWrapper
             selected={eventDate}
             onChange={(date: Date | null) => setEventDate(date)}
             showTimeSelect
@@ -467,7 +453,7 @@ export function CreateBet() {
             </div>
             <div>
               <span className="text-gray-500 text-sm">Ganancia Potencial:</span>
-              <span className="ml-2 text-green-400 font-bold">{formatCOP(potentialWin)}</span>
+              <span className="ml-2 text-green-400 font-bold">+{formatCOP(Math.abs(potentialWin))}</span>
             </div>
           </div>
         </div>
