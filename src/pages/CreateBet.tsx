@@ -88,6 +88,10 @@ export function CreateBet() {
     return null;
   };
 
+  const isValidPercentage = (value: number): boolean => {
+    return [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5].includes(value);
+  };
+
   useEffect(() => {
     fetchBankroll();
   }, [fetchBankroll]);
@@ -110,7 +114,7 @@ export function CreateBet() {
 
   const watchOdds = watch('odds');
   const watchAmount = watch('amount');
-  const watchPercentage = watch('percentage') || 1;
+  const watchPercentage = Number(watch('percentage')) || 1;
 
   useEffect(() => {
     const odds = Number(watchOdds) || 0;
@@ -385,16 +389,31 @@ export function CreateBet() {
             Porcentaje del Bankroll
             <span className="text-gold ml-2">{watchPercentage}%</span>
           </label>
-          <select
-            {...register('percentage', { valueAsNumber: true })}
-            className="w-full bg-bg-secondary border border-border-dark rounded-lg px-4 py-2 text-white"
-          >
-            {percentageOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          <input
+            type="range"
+            min="0"
+            max="5"
+            step="0.5"
+            value={watchPercentage}
+            onChange={(e) => {
+              const value = parseFloat(e.target.value);
+              setValue('percentage', value, { shouldValidate: true });
+            }}
+            className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+          />
+          <div className="flex justify-between text-xs text-gray-500 mt-1 overflow-x-auto">
+            <span>0%</span>
+            <span>0.5%</span>
+            <span>1%</span>
+            <span>1.5%</span>
+            <span>2%</span>
+            <span>2.5%</span>
+            <span>3%</span>
+            <span>3.5%</span>
+            <span>4%</span>
+            <span>4.5%</span>
+            <span>5%</span>
+          </div>
           
           {/* Category indicator */}
           {watchPercentage > 0 && (
