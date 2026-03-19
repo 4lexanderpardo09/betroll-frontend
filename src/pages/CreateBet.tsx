@@ -22,7 +22,7 @@ const betSchema = z.object({
   betType: z.enum(['HOME_WIN', 'AWAY_WIN', 'DRAW', 'DOUBLE_CHANCE_HOME', 'DOUBLE_CHANCE_AWAY', 'BTTS_YES', 'BTTS_NO', 'OVER', 'UNDER', 'HANDICAP', 'OTHER']),
   selection: z.string().min(1, 'La selección es requerida'),
   odds: z.number().min(1.01, 'La cuota debe ser mayor a 1.0'),
-  amount: z.number().min(1000, 'El monto mínimo es 1000 COP'),
+  amount: z.number().min(500, 'El monto mínimo es 500 COP'),
   percentage: z.number().min(0).max(5).optional(),
   reasoning: z.string().optional(),
 });
