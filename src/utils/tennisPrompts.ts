@@ -20,6 +20,16 @@ Busca información actualizada en internet ANTES de responder. Usa fuentes como
 Tennis Abstract, ATP/WTA oficial, Sofascore, Flashscore, Ultimate Tennis Stats,
 Tennis Insight y Betfair Exchange.
 
+⚠️ INSTRUCCIÓN ESPECIAL ANTI-TRAMPA (PRIORIDAD MÁXIMA):
+Antes de calcular cualquier probabilidad, DEBES ejecutar obligatoriamente
+la CALIBRACIÓN INICIAL (5 preguntas en la Sección 0).
+Si se activa ALERTA TRAMPA R1, todo el modelo se ajusta automáticamente:
+  +2.0 juegos al total proyectado base
+  -10% probabilidad de barrida 2-0 del favorito
+  BLOQUEAR automáticamente Set hándicap -1.5 del favorito
+  BLOQUEAR Under si el margen resultante < 3.5 juegos
+Este filtro tiene PRIORIDAD ABSOLUTA sobre cualquier otro cálculo de EV.
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 DATOS DEL PARTIDO
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -41,6 +51,39 @@ ANTES DE CONTINUAR — busca en internet y completa automáticamente:
   ELO J1:      [buscar ELO general en Tennis Abstract]
   ELO J2:      [buscar ELO general en Tennis Abstract]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+───────────────────────────────────────
+0️⃣ CALIBRACIÓN INICIAL ANTI-TRAMPA (EJECUTAR PRIMERO — OBLIGATORIO)
+───────────────────────────────────────
+Responder SÍ/NO a cada pregunta antes de cualquier análisis:
+
+  P1. ¿Es R1 o R2 del torneo para el favorito (primer partido del torneo)?
+      → SÍ = +3.0 juegos al total proyectado base
+
+  P2. ¿El rival es wildcard, qualifier o lucky loser?
+      → SÍ = ACTIVAR protocolo TRAMPA R1
+
+  P3. ¿La diferencia de ranking entre favorito y rival es > 80 posiciones?
+      → SÍ = mercado subestima al outsider en sets individuales (+1.0 juego)
+
+  P4. ¿El favorito viene de una derrota emocional reciente (vs top 10, <5 días)?
+      → SÍ = reducir -5% su probabilidad de victoria rápida (2-0)
+
+  P5. ¿El rival es joven (< 23 años) jugando un torneo Masters/Grand Slam?
+      → SÍ = "factor adrenalina": +2.0 juegos al total proyectado
+
+CONTEO DE ALERTAS: X de 5
+
+ÍNDICE DE CONFIANZA INICIAL:
+  → 0 alertas:   CONFIANZA ALTA   — stakes normales
+  → 1-2 alertas: CONFIANZA MEDIA  — reducir todos los stakes al 50%
+  → 3+ alertas:  CONFIANZA BAJA   — solo apostar si EV > 0.15 tras ajustes
+
+AJUSTE BASE DEL TOTAL DE JUEGOS POR CALIBRACIÓN:
+  Total base estimado (antes del modelo): XX.X juegos
+  Ajuste por alertas P1+P3+P5:          +X.X juegos
+  Total calibrado:                        XX.X juegos
+  → Este total calibrado se usa en TODOS los cálculos siguientes.
 
 ───────────────────────────────────────
 1️⃣ FORMA RECIENTE
@@ -91,6 +134,12 @@ VELOCIDAD Y VARIACIÓN:
 - Velocidad media 1er servicio (km/h si disponible)
 - Velocidad media 2do servicio
 - % de puntos ganados al saque total (serve rating)
+
+⚠️ ANÁLISIS DE SAQUE DEL OUTSIDER (obligatorio si P2 = SÍ):
+- ¿El outsider tiene saque potente incluso en challengers? (> 6 aces/partido)
+- ¿El favorito tiene retorno débil o promedio? (break rate < 28%)
+- Si ambas son SÍ → ajustar total proyectado: +1.5 juegos adicionales
+  y reducir probabilidad de barrida 2-0 del favorito en -5% extra
 
 ───────────────────────────────────────
 3️⃣ ESTADÍSTICAS DE RESTO (últimas 52 semanas en esta superficie)
@@ -151,6 +200,29 @@ CONDICIONES ESPECÍFICAS:
 - Preferencia de altitud si el torneo es en altura
 
 ───────────────────────────────────────
+5️⃣B PERFIL HISTÓRICO DEL FAVORITO EN ESTE TORNEO/RONDA (OBLIGATORIO)
+───────────────────────────────────────
+Buscar en Tennis Abstract / Flashscore:
+
+HISTORIAL EN R1 (o ronda actual) de este torneo específico:
+- ¿Cuántas veces ha jugado R1 aquí? X veces
+- Récord en R1 de este torneo: W-L
+- % victorias en 2 sets en R1 de este torneo: X%
+- ¿Ha perdido alguna vez como favorito en R1 aquí? SÍ/NO
+
+TRAMPA PSICOLÓGICA:
+- ¿Viene de una derrota emocional reciente (ej: vs top 10 en < 48h)?
+- ¿Declaró públicamente que mira hacia el siguiente torneo?
+  (señal de distracción mental → penalizar -5% prob victoria rápida)
+- ¿Tiene presión de patrocinadores o país en este torneo?
+
+AJUSTE DE PROBABILIDADES POR HISTORIAL R1:
+- Si W% en R1 de este torneo < 60% → restar -5% prob de victoria total
+- Si perdió en R1 aquí el año anterior → restar -3% adicional
+- Si viene de derrota emocional (< 48h) → restar -3% adicional
+→ Reportar ajuste total aplicado: -X%
+
+───────────────────────────────────────
 6️⃣ ENFRENTAMIENTOS DIRECTOS H2H
 ───────────────────────────────────────
 Buscar historial completo en Tennis Abstract o ATP/WTA:
@@ -193,7 +265,7 @@ CARGA RECIENTE:
 - ¿Hubo viaje intercontinental reciente?
 
 SEÑALES DE FATIGA:
-- ¿Tuvo partidos largos (>2h) en rondas previas?
+- ¿Tuvo partidos largos (> 2h) en rondas previas?
 - Historial de retiros o abandonos en temporadas anteriores
 - Rendimiento en el torneo después de semanas cargadas
 
@@ -302,6 +374,9 @@ PROPS DE JUGADOR (si disponibles):
 1️⃣2️⃣ MODELO DE PROBABILIDAD REAL
 ───────────────────────────────────────
 
+⚠️ IMPORTANTE: Usar el TOTAL CALIBRADO de la Sección 0 como base.
+Todos los ajustes de la Calibración Inicial ya deben estar incorporados.
+
 MÉTODO 1 — Modelo matemático de saque/resto:
   p = prob de ganar un punto al saque de J1
   q = prob de ganar un punto al saque de J2
@@ -324,7 +399,7 @@ MÉTODO 3 — ELO ajustado por superficie:
   - ELO J1 en [superficie] vs ELO J2 en [superficie]
   - Fórmula Elo: E(J1) = 1 / (1 + 10^((ELO_J2 - ELO_J1) / 400))
 
-RESULTADO CONSOLIDADO:
+RESULTADO CONSOLIDADO (ya con ajustes de Calibración Inicial aplicados):
   ${data.homeTeam} gana el partido:       X%
   ${data.awayTeam} gana el partido:       X%
   Partido va a sets máximos:              X%
@@ -332,7 +407,7 @@ RESULTADO CONSOLIDADO:
   ${data.homeTeam} gana 2-1 (o 3-1/3-2): X%
   ${data.awayTeam} gana 2-0 (o 3-0):     X%
   ${data.awayTeam} gana 2-1 (o 3-1/3-2): X%
-  Total de juegos proyectado:             XX.X juegos
+  Total de juegos proyectado CALIBRADO:   XX.X juegos
   Tie-break en al menos un set:           X%
 
 ───────────────────────────────────────
@@ -384,42 +459,56 @@ PROPS:
 ⚠️ FILTROS ANTI-ERROR OBLIGATORIOS (aplicar ANTES de confirmar cualquier apuesta)
 ───────────────────────────────────────
 
-FILTRO 1 — PROXIMIDAD DE LÍNEA EN TOTALES DE JUEGOS
-El modelo de tenis tiene un margen de incertidumbre de ±2 juegos. Si el
-total proyectado está a menos de 1.5 juegos de la línea O/U, el EV real
-es menor al calculado porque el rango de incertidumbre cruza la línea.
+FILTRO 0 — BLOQUEOS AUTOMÁTICOS POR CALIBRACIÓN INICIAL
+  Si ALERTA TRAMPA R1 está activa (P2 = SÍ en Sección 0):
+  → Set hándicap -1.5 del favorito: BLOQUEADA AUTOMÁTICAMENTE ⛔
+  → Hándicap de juegos fuerte (-3.5 o más) del favorito: BLOQUEADA ⛔
+  → Under juegos: solo válido si margen > 3.5 juegos tras calibración ⛔
+  → EV mínimo requerido para cualquier apuesta sube a 0.12 (en vez de 0.05)
 
-  → Calcular: |juegos_proyectados - linea_OU|
-  → Si la diferencia es < 1.5 juegos → reducir stake al 50% o NO APOSTAR
-  → Si la diferencia es < 0.5 juegos → NO APOSTAR bajo ninguna circunstancia
+FILTRO 1 — PROXIMIDAD DE LÍNEA EN TOTALES DE JUEGOS (umbrales reforzados)
+  Usar el TOTAL CALIBRADO (con ajustes de Sección 0) para calcular proximidad.
+
+  → Calcular: |total_calibrado - linea_OU|
+  → Si la diferencia es < 3.0 juegos → REDUCIR stake al 50%
+  → Si la diferencia es < 1.5 juegos → BLOQUEADA
+  → Si la diferencia es < 0.5 juegos → BLOQUEADA + ALERTA MÁXIMA ⛔
   → Reportar: "Proximidad: X.X juegos — [APTA / REDUCIR 50% / BLOQUEADA]"
 
+  REGLA ADICIONAL UNDER:
+  → Si ALERTA TRAMPA R1 activa: agregar +2.0 juegos adicionales al total
+    calibrado antes de calcular proximidad al Under.
+  → Solo apostar Under si el margen final supera 3.5 juegos.
+
 FILTRO 2 — CORRELACIÓN ENTRE APUESTAS DEL MISMO PARTIDO
-Antes de recomendar 2+ apuestas simultáneas, verificar que el escenario
-que las hace ganar sea el mismo, no contradictorio.
-
-  Correlaciones NEGATIVAS en tenis (incompatibles — nunca recomendar juntas):
+  Correlaciones NEGATIVAS (incompatibles — nunca recomendar juntas):
   - Under juegos totales + J1 gana 2-1 o J2 gana 2-1
-    (partido de 3 sets siempre produce más juegos que uno de 2)
   - Over juegos totales + J1 gana 2-0 o J2 gana 2-0
-    (barrida en 2 sets reduce el total de juegos posibles)
-  - Ganador del partido con cuota baja + Over total de juegos
-    (favorito claro tiende a ganar rápido = menos juegos)
+  - Ganador con cuota baja + Over total de juegos
 
-  Correlaciones POSITIVAS en tenis (compatibles):
+  Correlaciones POSITIVAS (compatibles):
   - Under juegos + barrida 2-0 de cualquier jugador
   - Over juegos + partido va a 3 sets
-  - J1 gana + J1 gana primer set (mismo escenario)
-  - Over aces J1 + Under juegos (si J1 es ace-machine puede ganar rápido)
+  - J1 gana + J1 gana primer set
+  - Over aces J1 + Under juegos (si J1 es ace-machine)
 
-  → Para cada par de apuestas declarar:
-    "Correlación: POSITIVA / NEGATIVA / NEUTRA — [apta / incompatible]"
+  → Para cada par declarar: "Correlación: POSITIVA / NEGATIVA / NEUTRA"
   → Si es NEGATIVA → conservar solo la de mayor EV ajustado
 
-FILTRO 3 — MARGEN MÍNIMO EN PROPS DE ACES Y DOBLES FALTAS
+FILTRO 3 — VALIDACIÓN SET HÁNDICAP -1.5 (BARRIDA DEL FAVORITO)
+  Antes de recomendar Set -1.5 del favorito, verificar TODAS:
+  □ Favorito ganó 2-0 en > 55% de sus últimos 10 partidos en esta superficie
+  □ ALERTA TRAMPA R1 NO está activa
+  □ Favorito tiene historial positivo en R1 de este torneo (W% > 70%)
+  □ Rival tiene Hold% < 65% en la superficie (no puede mantenerse al saque)
+
+  → Si NO cumple 3 de 4 condiciones: NO recomendar Set -1.5
+  → Si ALERTA TRAMPA R1 activa: BLOQUEADA automáticamente sin excepción ⛔
+
+FILTRO 4 — MARGEN MÍNIMO EN PROPS DE ACES Y DOBLES FALTAS
   Props de aces o DF son muy volátiles. Solo recomendar si:
   - El promedio del jugador en esta superficie supera la línea en +1.5 aces
-  - El rival tiene un % de retorno de primer servicio < 65% (favorece aces)
+  - El rival tiene un % de retorno de primer servicio < 65%
   → Reportar: "Promedio aces vs línea: +X.X — [APTA / RECHAZADA]"
 
 ───────────────────────────────────────
@@ -427,15 +516,16 @@ FILTRO 3 — MARGEN MÍNIMO EN PROPS DE ACES Y DOBLES FALTAS
 ───────────────────────────────────────
 - Ganador probable + top 3 argumentos
 - Marcador más probable (ej: 6-4, 7-5 o 6-3, 6-4)
-- Total de juegos proyectado: XX juegos
+- Total de juegos proyectado CALIBRADO: XX juegos
 - ¿Hay tie-break probable? ¿En qué set?
 - Apuesta principal del partido
 - Segunda apuesta si hay valor (con correlación validada)
 - El "PERO": factor que tumbaría el análisis
+- Resumen de alertas activas de Calibración Inicial
 - Nivel de certeza del modelo: ALTO / MEDIO / BAJO
 
 ───────────────────────────────────────
-1️⃣5️⃣ TOP APUESTAS CON VALOR (EV > 0.05)
+1️⃣5️⃣ TOP APUESTAS CON VALOR (EV > 0.05 — o > 0.12 si ALERTA TRAMPA R1 activa)
 ───────────────────────────────────────
 APUESTA 1 — [nombre detallado]
 → Tipo: Ganador / Sets / Juegos / Hándicap / Prop
@@ -445,22 +535,26 @@ APUESTA 1 — [nombre detallado]
 → EV: +X.XX
 → Categoría: A / B / C
 → Proximidad línea: X.X juegos — [APTA / REDUCIR 50% / BLOQUEADA]
+→ Filtro 0 (TRAMPA R1): [PASÓ / BLOQUEADA]
+→ Filtro 3 (Set -1.5): [PASÓ / BLOQUEADA] (si aplica)
 → Correlación con otras apuestas: POSITIVA / NEGATIVA / NEUTRA
 → Argumento principal (2-3 líneas)
 
 APUESTA 2 — [nombre detallado]
 → Tipo / Mercado / Cuota / Prob / EV / Categoría
 → Proximidad línea: X.X juegos — [APTA / REDUCIR 50% / BLOQUEADA]
+→ Filtro 0 (TRAMPA R1): [PASÓ / BLOQUEADA]
 → Correlación con Apuesta 1: POSITIVA / NEGATIVA / NEUTRA
 → Argumento
 
-APUESTA 3 — [nombre detallado] (solo si EV > 0.05)
+APUESTA 3 — [nombre detallado] (solo si EV > umbral activo)
 → Tipo / Mercado / Cuota / Prob / EV / Categoría
 → Proximidad línea: X.X juegos — [APTA / REDUCIR 50% / BLOQUEADA]
+→ Filtro 0 (TRAMPA R1): [PASÓ / BLOQUEADA]
 → Correlación con Apuestas 1 y 2: POSITIVA / NEGATIVA / NEUTRA
 → Argumento
 
-⛔ Si ninguna EV > 0.05: "NO HAY VALUE HOY — NO APOSTAR"
+⛔ Si ninguna pasa todos los filtros con EV > umbral: "NO HAY VALUE HOY — NO APOSTAR"
 
 ───────────────────────────────────────
 1️⃣6️⃣ GESTIÓN DE BANKROLL
@@ -472,8 +566,10 @@ CATEGORÍA B — EV 0.07-0.12 → 3%   = ${formatCOP(data.bankrollAmount * 0.03)
 CATEGORÍA C — EV 0.05-0.07 → 1.5% = ${formatCOP(data.bankrollAmount * 0.015)}
 
 REGLA: No superar 10% del bankroll en total por partido.
-REGLA: Máximo 2 apuestas simultáneas en el mismo partido de tenis
-       (mayor varianza que el baloncesto por naturaleza de sets).
+REGLA: Máximo 2 apuestas simultáneas en el mismo partido de tenis.
+REGLA: Si CONFIANZA MEDIA (1-2 alertas) → reducir TODOS los stakes al 50%.
+REGLA: Si CONFIANZA BAJA (3+ alertas) → EV mínimo requerido sube a 0.15
+       y stakes máximos reducidos al 50% de la categoría.
 REGLA: Si el filtro de proximidad activa "REDUCIR 50%", aplicar ese
        recorte al monto calculado por categoría antes de apostar.
 REGLA: Si dos apuestas tienen correlación NEGATIVA, conservar solo
@@ -482,30 +578,42 @@ REGLA: Si dos apuestas tienen correlación NEGATIVA, conservar solo
 ───────────────────────────────────────
 1️⃣7️⃣ RESUMEN EJECUTIVO FINAL
 ───────────────────────────────────────
-╔══════════════════════════════════════════╗
-║       MEJOR APUESTA DEL PARTIDO          ║
-╠══════════════════════════════════════════╣
-║ APUESTA:                                 ║
-║ TIPO:                                    ║
-║ MERCADO EXACTO:                          ║
-║ CUOTA:                                   ║
-║ PROBABILIDAD REAL:                       ║
-║ EV:                                      ║
-║ PROXIMIDAD LÍNEA:   X.X j — [estado]    ║
-║ CORRELACIÓN:        POSITIVA/NEG/NEUTRA  ║
-║ CONFIANZA: baja / media / alta           ║
-║ CATEGORÍA: A / B / C                     ║
-║ MONTO:                                   ║
-╠══════════════════════════════════════════╣
-║       SEGUNDA APUESTA (si hay valor)     ║
-╠══════════════════════════════════════════╣
-║ APUESTA:                                 ║
-║ TIPO:                                    ║
-║ CUOTA:                                   ║
-║ PROBABILIDAD REAL:                       ║
-║ EV:                                      ║
-║ PROXIMIDAD LÍNEA:   X.X j — [estado]    ║
-║ CORRELACIÓN CON AP1: POSITIVA/NEG/NEUTRA ║
-║ MONTO:                                   ║
-╚══════════════════════════════════════════╝`;
+╔══════════════════════════════════════════════╗
+║         ALERTAS DE CALIBRACIÓN ACTIVAS       ║
+╠══════════════════════════════════════════════╣
+║ P1 R1/R2 favorito:      SÍ/NO               ║
+║ P2 Rival WC/Q/LL:       SÍ/NO  ← TRAMPA R1 ║
+║ P3 Gap ranking > 80:    SÍ/NO               ║
+║ P4 Derrota emocional:   SÍ/NO               ║
+║ P5 Rival joven < 23:    SÍ/NO               ║
+║ CONFIANZA: ALTA / MEDIA / BAJA               ║
+║ TOTAL calibrado: XX.X juegos                 ║
+╠══════════════════════════════════════════════╣
+║         MEJOR APUESTA DEL PARTIDO            ║
+╠══════════════════════════════════════════════╣
+║ APUESTA:                                     ║
+║ TIPO:                                        ║
+║ MERCADO EXACTO:                              ║
+║ CUOTA:                                       ║
+║ PROBABILIDAD REAL:                           ║
+║ EV:                                          ║
+║ PROXIMIDAD LÍNEA:   X.X j — [estado]        ║
+║ FILTRO TRAMPA R1:   PASÓ / BLOQUEADA         ║
+║ CORRELACIÓN:        POSITIVA/NEG/NEUTRA      ║
+║ CONFIANZA: baja / media / alta               ║
+║ CATEGORÍA: A / B / C                         ║
+║ MONTO:                                       ║
+╠══════════════════════════════════════════════╣
+║       SEGUNDA APUESTA (si hay valor)         ║
+╠══════════════════════════════════════════════╣
+║ APUESTA:                                     ║
+║ TIPO:                                        ║
+║ CUOTA:                                       ║
+║ PROBABILIDAD REAL:                           ║
+║ EV:                                          ║
+║ PROXIMIDAD LÍNEA:   X.X j — [estado]        ║
+║ FILTRO TRAMPA R1:   PASÓ / BLOQUEADA         ║
+║ CORRELACIÓN CON AP1: POSITIVA/NEG/NEUTRA     ║
+║ MONTO:                                       ║
+╚══════════════════════════════════════════════╝`;
 };

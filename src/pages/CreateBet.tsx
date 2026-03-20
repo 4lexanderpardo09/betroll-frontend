@@ -71,9 +71,9 @@ export function CreateBet() {
   };
 
   const getCategoryFromPercentage = (percentage: number): 'A' | 'B' | 'C' | null => {
-    if (percentage >= 3) return 'A';
-    if (percentage >= 1.5) return 'B';
-    if (percentage >= 0.5) return 'C';
+    if (percentage >= 5) return 'A';
+    if (percentage >= 3) return 'B';
+    if (percentage >= 1.5) return 'C';
     return null;
   };
 
@@ -407,8 +407,8 @@ export function CreateBet() {
           {watchPercentage > 0 && (
             <div className="mt-2 flex items-center justify-center">
               <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                watchPercentage >= 3 ? 'bg-green-900/50 text-green-400' :
-                watchPercentage >= 1.5 ? 'bg-yellow-900/50 text-yellow-400' :
+                watchPercentage >= 5 ? 'bg-green-900/50 text-green-400' :
+                watchPercentage >= 3 ? 'bg-yellow-900/50 text-yellow-400' :
                 'bg-blue-900/50 text-blue-400'
               }`}>
                 Categoría {getCategoryFromPercentage(watchPercentage) || '-'}
