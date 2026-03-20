@@ -42,6 +42,7 @@ export interface CreateBetDto {
   odds: number
   amount: number
   confidence?: number
+  percentage?: number
   reasoning?: string
 }
 
