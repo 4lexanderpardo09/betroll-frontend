@@ -35,11 +35,11 @@ ${data.odds ? `CUOTA QUE VEO:    ${data.odds}` : ''}
 1️⃣ FORMA RECIENTE
 ───────────────────────────────────────
 Para CADA equipo:
-- Últimos 5 partidos (rival, resultado W/L, puntos anotados y recibidos)
-- Últimos 10 partidos: record W/L + puntos promedio anotados/recibidos
+- Últimos 15 partidos (rival, resultado W/L, puntos anotados y recibidos)
+- Últimos 15 partidos: record W/L + puntos promedio anotados/recibidos
 - Racha actual (victorias o derrotas consecutivas)
-- ATS record últimos 10 (cuántos cubrieron el spread)
-- Over/Under record últimos 10
+- ATS record últimos 15 (cuántos cubrieron el spread)
+- Over/Under record últimos 15
 - Rendimiento como LOCAL vs como VISITANTE (record + pts)
 - Puntos en 1ra mitad vs 2da mitad promedio
 - Diferencial de puntos promedio (point differential)
@@ -116,7 +116,7 @@ Por cada jugador:
 - True Shooting % (TS%)
 - Plus/Minus (+/-)
 - VORP (Value Over Replacement Player)
-- Tendencia últimos 5 partidos: ¿caliente o frío?
+- Tendencia últimos 15 partidos: ¿caliente o frío?
 - Puntos en casa vs fuera (splits local/visitante)
 - Puntos vs defensa del rival (historial o matchup proyectado)
 
@@ -128,7 +128,7 @@ Por cada jugador:
 
 🎯 JUGADOR FRANQUICIA (STAR PLAYER):
 - Estadísticas completas de la temporada
-- Forma últimos 5 partidos (pts/reb/ast partido a partido)
+- Forma últimos 15 partidos (pts/reb/ast partido a partido)
 - ¿Juega hoy? Estado de salud
 - Matchup directo con el rival
 - Over/Under de puntos del día (línea del mercado)
@@ -146,7 +146,7 @@ Por cada jugador:
 - MPG / PPG / RPG / APG / SPG / BPG
 - FG% / 3P% / FT%
 - USG% / PER / TS% / +/-
-- Forma últimos 5 partidos
+- Forma últimos 15 partidos
 - Splits local vs visitante
 - Matchup proyectado vs local
 
@@ -156,7 +156,7 @@ Por cada jugador:
 
 🎯 JUGADOR FRANQUICIA (STAR PLAYER):
 - Estadísticas completas
-- Forma últimos 5 partidos
+- Forma últimos 15 partidos
 - Estado de salud
 - Matchup directo
 - Línea de puntos del mercado
@@ -243,14 +243,14 @@ PROP BETS DESTACADAS CON MAYOR VALOR:
 ───────────────────────────────────────
 EQUIPO LOCAL en casa:
 - Record en casa (V/D) + ranking
-- ATS record en casa
+- ATS record en casa (últimos 15)
 - Puntos anotados en casa (PPG)
 - Puntos recibidos en casa (PPG)
 - OffRtg / DefRtg en casa
 
 EQUIPO VISITANTE fuera:
 - Record fuera (V/D) + ranking
-- ATS record fuera
+- ATS record fuera (últimos 15)
 - Puntos anotados fuera (PPG)
 - Puntos recibidos fuera (PPG)
 - OffRtg / DefRtg fuera
@@ -313,10 +313,27 @@ MATCHUP TÁCTICO:
 ───────────────────────────────────────
 Buscar cuotas actuales en Bet365 / Draftkings / FanDuel / Pinnacle:
 
+⚠️ REGLA DE CUOTAS OBLIGATORIA:
+Antes de calcular cualquier EV, verificar que la cuota usada
+sea el CONSENSO de mercado, no un outlier.
+
+PROCESO OBLIGATORIO:
+1. Buscar la cuota en MÍNIMO 3 casas distintas
+2. Si una cuota difiere >30% del resto → es outlier, NO usarla
+   para el cálculo base de EV
+3. Usar siempre la cuota MÁS CONSERVADORA del rango para EV base
+4. Si con cuota conservadora EV > 0.05 → apostar en la casa
+   que ofrezca la mayor cuota (mayor EV final)
+5. Si EV solo es positivo con la cuota outlier → NO APOSTAR
+6. Reportar explícitamente:
+   "Rango de mercado: +XXX a +XXX | Cuota usada (conservadora): XXX
+    | Casa recomendada: [nombre] | Outlier detectado: SÍ/NO"
+
 MONEYLINE:
 - Local: [cuota americana] → [cuota decimal] → prob implícita: %
 - Visitante: [cuota americana] → [cuota decimal] → prob implícita: %
 - Margen de la casa (vig): %
+- Rango entre casas: mín X.XX — máx X.XX
 
 SPREAD:
 - Local -X.5: [cuota]
@@ -349,12 +366,40 @@ PRIMERA MITAD:
 ───────────────────────────────────────
 1️⃣7️⃣ MODELO DE PROBABILIDAD REAL
 ───────────────────────────────────────
+⚠️ CHECKLIST DE CALIBRACIÓN DE PROBABILIDAD (OBLIGATORIO):
+Antes de fijar la prob real de cualquier equipo, aplicar
+estos 5 ajustes en orden:
+
+AJUSTE 1 — Localía reforzada:
+  Si equipo local tiene record en casa > .650
+  → sumar +2% a su prob base
+
+AJUSTE 2 — Lesión de estrella del FAVORITO:
+  Si el mejor jugador del favorito está OUT
+  → restar solo 5–8% (no más) si el equipo tiene
+    historial ganador sin él (verificar record sin esa estrella)
+
+AJUSTE 3 — Lesiones del VISITANTE:
+  Si el visitante tiene 3+ jugadores OUT incluyendo
+  su mejor jugador → restar 8–12% de su prob base
+
+AJUSTE 4 — Momentum reciente (últimos 15 partidos):
+  Si un equipo lleva 7+ derrotas en últimos 10 → restar 3%
+  Si un equipo lleva 8+ victorias en últimos 10 → sumar 3%
+
+AJUSTE 5 — Sanity check final OBLIGATORIO:
+  Comparar prob calculada vs consenso de mercado
+  (Dimers, spreads implícitos, línea ML).
+  Si difiere >10 puntos porcentuales → revisar modelo.
+  Reportar: "Prob modelo: X% | Prob mercado implícita: Y%
+  | Diferencia: Z% | [ACEPTABLE / REVISAR]"
+
 MÉTODO 1 — Proyección de puntos por ratings:
 Total = ((OffRtg_L + OffRtg_V) / 200) × Pace × 2
 Diferencial = NetRtg_L - NetRtg_V + ventaja_local(3pts)
 
 MÉTODO 2 — Ponderación multi-factor:
-- Forma reciente últimos 10 partidos  → 20%
+- Forma reciente últimos 15 partidos  → 20%
 - Net Rating diferencial de temporada  → 20%
 - Análisis de matchups individuales     → 15%
 - H2H histórico reciente               → 10%
@@ -377,71 +422,122 @@ Spread proyectado:  Local gana/pierde por X puntos
 ───────────────────────────────────────
 EV = (prob_real × cuota_decimal) - 1
 
+⚠️ FILTRO DOBLE OBLIGATORIO — EV + PROBABILIDAD:
+Una apuesta solo es VÁLIDA si cumple AMBOS filtros simultáneamente.
+
+FILTRO A — EV MÍNIMO POR TIPO:
+  - Spread / Total:    EV > +0.05
+  - ML favorito:       EV > +0.05
+  - ML underdog:       EV > +0.07
+  - Props estrella:    EV > +0.08
+  - Props rotación:    EV > +0.10
+
+FILTRO B — PROBABILIDAD MÍNIMA POR TIPO:
+  - Spread favorito:   prob ≥ 55%
+  - Total O/U:         prob ≥ 55%
+  - ML favorito:       prob ≥ 60%
+  - ML underdog:       prob ≥ 38%
+  - Props estrella:    prob ≥ 60%
+  - Props rotación:    prob ≥ 62%
+
+RESULTADO POR APUESTA:
+  ✅ Cumple A y B     → APOSTAR (categoría según EV)
+  ⚠️ Cumple solo A   → ALTO RIESGO → reducir stake 50%
+  ⚠️ Cumple solo B   → MAL PRECIO → NO APOSTAR
+  ❌ No cumple ninguno → DESCARTAR
+
+Reportar siempre:
+"Filtro A (EV): PASA/FALLA | Filtro B (Prob): PASA/FALLA
+→ Veredicto: APTA / ALTO RIESGO / MAL PRECIO / DESCARTADA"
+
 MERCADOS DE EQUIPO:
-| Apuesta          | Prob Real | Cuota | EV    | ¿Valor? |
-|------------------|-----------|-------|-------|---------|
-| Local ML         |     %     |       |       | ✅/❌   |
-| Visitante ML     |     %     |       |       | ✅/❌   |
-| Local -spread    |     %     |       |       | ✅/❌   |
-| Visitante +spread|     %     |       |       | ✅/❌   |
-| Over total       |     %     |       |       | ✅/❌   |
-| Under total      |     %     |       |       | ✅/❌   |
-| Over 1ra mitad   |     %     |       |       | ✅/❌   |
-| Under 1ra mitad  |     %     |       |       | ✅/❌   |
+| Apuesta          | Prob Real | Filtro B | Cuota | EV    | Filtro A | Veredicto |
+|------------------|-----------|----------|-------|-------|----------|-----------|
+| Local ML         |     %     | ✅/❌    |       |       | ✅/❌    | APTA/DESC |
+| Visitante ML     |     %     | ✅/❌    |       |       | ✅/❌    | APTA/DESC |
+| Local -spread    |     %     | ✅/❌    |       |       | ✅/❌    | APTA/DESC |
+| Visitante +spread|     %     | ✅/❌    |       |       | ✅/❌    | APTA/DESC |
+| Over total       |     %     | ✅/❌    |       |       | ✅/❌    | APTA/DESC |
+| Under total      |     %     | ✅/❌    |       |       | ✅/❌    | APTA/DESC |
+| Over 1ra mitad   |     %     | ✅/❌    |       |       | ✅/❌    | APTA/DESC |
+| Under 1ra mitad  |     %     | ✅/❌    |       |       | ✅/❌    | APTA/DESC |
 
 PROPS DE JUGADORES:
-| Prop              | Jugador | Prob Real | Cuota | EV | ¿Valor? |
-|-------------------|---------|-----------|-------|----|---------|
-| Over X puntos     |         |     %     |       |    | ✅/❌   |
-| Over X rebotes    |         |     %     |       |    | ✅/❌   |
-| Over X asistencias|         |     %     |       |    | ✅/❌   |
-| Over X triples    |         |     %     |       |    | ✅/❌   |
-| Over X PRA        |         |     %     |       |    | ✅/❌   |
+| Prop              | Jugador | Prob Real | Filtro B | Cuota | EV | Filtro A | Veredicto |
+|-------------------|---------|-----------|----------|-------|----|----------|-----------|
+| Over X puntos     |         |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
+| Over X rebotes    |         |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
+| Over X asistencias|         |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
+| Over X triples    |         |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
+| Over X PRA        |         |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
 
 ───────────────────────────────────────
 ⚠️ FILTROS ANTI-ERROR OBLIGATORIOS (aplicar ANTES de confirmar cualquier apuesta)
 ───────────────────────────────────────
 
-FILTRO 1 — PROXIMIDAD DE LÍNEA EN TOTALES O/U
-El modelo tiene un margen de incertidumbre de ±5 puntos. Si el total
-proyectado está a menos de 4 puntos de la línea O/U, el EV real es
-significativamente menor al calculado porque el rango de incertidumbre
-cruza la línea.
+FILTRO 1 — PROXIMIDAD DE LÍNEA (EXCLUSIVO PARA TOTALES O/U)
+⚠️ ESTE FILTRO APLICA ÚNICAMENTE A MERCADOS DE TOTAL (OVER/UNDER).
+   NUNCA A SPREADS NI A MONEYLINE.
 
+  Para totales O/U:
   → Calcular: |total_proyectado - linea_OU|
-  → Si la diferencia es < 4 pts → reducir stake al 50% o NO APOSTAR
+  → Si la diferencia es < 4 pts → reducir stake al 50%
   → Si la diferencia es < 2 pts → NO APOSTAR bajo ninguna circunstancia
-  → Reportar explícitamente: "Proximidad: X.X pts — [APTA / REDUCIR 50% / BLOQUEADA]"
+  → Reportar: "Proximidad O/U: X.X pts — [APTA / REDUCIR 50% / BLOQUEADA]"
+
+  Para SPREADS — usar filtro de EDGE:
+  → Edge = |diferencial_proyectado - spread_linea|
+  → Si edge < 1.5 pts → NO APOSTAR (insuficiente)
+  → Si edge 1.5–3.0 pts → APTA con stake categoría C
+  → Si edge > 3.0 pts → APTA con stake completo según categoría EV
+  → Reportar: "Edge spread: X.X pts — [INSUFICIENTE / APTA-C / APTA]"
+
+  Para ML:
+  → No aplica filtro de proximidad.
+    El control es exclusivamente vía EV y calibración de probabilidad.
 
 FILTRO 2 — CORRELACIÓN ENTRE APUESTAS DEL MISMO PARTIDO
 Antes de recomendar 2 o más apuestas simultáneas en el mismo partido,
 mapear el escenario de juego que las hace ganar a ambas. Si ese escenario
-es contradictorio, las apuestas se cancelan mutuamente y no deben
-recomendarse juntas.
+es contradictorio, las apuestas se cancelan mutuamente.
 
-  Ejemplos de correlaciones NEGATIVAS (incompatibles — nunca recomendar juntas):
+  Ejemplos de correlaciones NEGATIVAS (incompatibles):
   - Under total + Over rebotes/puntos de jugador del equipo ganador proyectado
-    (blowout → el favorito retira titulares en C4 → el jugador pierde 6-9 min)
   - Under total + Over asistencias de un PG que necesita ritmo alto para asistir
   - Visitante cubre spread + Over puntos del jugador estrella del local
 
-  Ejemplos de correlaciones POSITIVAS (compatibles — pueden recomendarse juntas):
-  - Under total + Under puntos del jugador estrella del equipo con menor proyección
+  Ejemplos de correlaciones POSITIVAS (compatibles):
+  - Under total + Under puntos del jugador del equipo con menor proyección
   - Over total + Over puntos del jugador del equipo más ofensivo
   - Local gana ML + Over puntos de la estrella del local
 
-  → Para cada par de apuestas a recomendar, declarar explícitamente:
-    "Correlación: POSITIVA / NEGATIVA / NEUTRA — [apta / incompatible]"
-  → Si la correlación es NEGATIVA → eliminar una de las dos apuestas
-    (preferir la de mayor EV ajustado)
+  TABLA DE CORRELACIÓN SPREAD + PROPS (OBLIGATORIA):
+  | Situación                              | Correlación    | Acción             |
+  |----------------------------------------|----------------|--------------------|
+  | Spread fav + Over pts estrella fav     | POSITIVA ✅    | Apta combinación   |
+  | Spread fav + Over PRA estrella fav     | POSITIVA ✅    | Apta combinación   |
+  | Spread fav + Over pts rival            | NEGATIVA ❌    | Eliminar una       |
+  | Spread fav + Over PRA estrella rival   | Leve neg ⚠️    | Reducir prop 50%   |
+  | Spread fav + Under pts rival           | POSITIVA ✅    | Apta combinación   |
+  | ML underdog + Over PRA estrella rival  | POSITIVA ✅    | Apta combinación   |
 
-  CASO ESPECIAL — BLOWOUT RISK EN PROPS DE ROTACIÓN:
-  Si el spread del partido es ≥ 10 puntos, aplicar penalización automática
-  a las props de rebotes, puntos y minutos de jugadores de rotación media
-  (no estrellas) del equipo favorito:
-  → Restar 1.5 unidades a la proyección del jugador (efecto cuarto de blowout)
-  → Solo recomendar la prop si, después de aplicar la penalización,
-    el promedio ajustado sigue superando la línea en al menos +1.0 unidades
+  → Para correlación "Leve negativa ⚠️": reducir stake de la prop al 50%.
+  → Para correlación NEGATIVA ❌: eliminar la apuesta de MENOR EV ajustado.
+
+  → Para cada par de apuestas declarar:
+    "Correlación: POSITIVA / NEGATIVA / LEVE NEG / NEUTRA
+    → [apta / reducir prop 50% / incompatible]"
+
+  CASO ESPECIAL — BLOWOUT RISK EN PROPS:
+  Si spread ≥ 10 puntos:
+  → Penalizar props pts/reb/PRA jugadores equipo PERDEDOR: -2.0 u.
+  → Penalizar props jugadores rotación media FAVORITO: -1.5 u.
+  → Solo recomendar si tras penalización el promedio ajustado
+    sigue superando la línea en al menos +1.0 unidades.
+
+  Si spread entre 6–9 puntos (blowout parcial posible):
+  → Penalizar props jugadores equipo perdedor: -1.0 u.
+  → Evaluar si la prop sigue siendo válida tras ajuste.
 
 ───────────────────────────────────────
 1️⃣9️⃣ PREDICCIÓN FINAL
@@ -456,40 +552,48 @@ recomendarse juntas.
 - Nivel de certeza del modelo: ALTO / MEDIO / BAJO
 
 ───────────────────────────────────────
-2️⃣0️⃣ TOP APUESTAS CON VALOR (EV > 0.05)
+2️⃣0️⃣ TOP APUESTAS CON VALOR (EV > 0.05 + Prob mínima cumplida)
 ───────────────────────────────────────
 APUESTA 1 — [nombre detallado]
 → Tipo: ML / Spread / Total / Prop
 → Mercado: [descripción exacta]
-→ Cuota: [decimal]
-→ Prob Real: %
+→ Cuota usada: [decimal] | Rango mercado: [mín — máx] | Outlier: SÍ/NO
+→ Prob Real: % | Sanity check vs mercado: X% dif. — [ACEPTABLE / REVISAR]
 → EV: +X.XX
 → Categoría: A / B / C
-→ Proximidad línea: X.X pts — [APTA / REDUCIR 50% / BLOQUEADA]  ← nuevo
-→ Correlación con otras apuestas: POSITIVA / NEGATIVA / NEUTRA    ← nuevo
+→ Filtro A (EV):    PASA / FALLA
+→ Filtro B (Prob):  PASA / FALLA
+→ Proximidad/Edge:  X.X pts — [APTA / REDUCIR 50% / BLOQUEADA / INSUFICIENTE]
+→ Correlación con otras apuestas: POSITIVA / NEGATIVA / LEVE NEG / NEUTRA
 → Argumento principal (2-3 líneas)
 
 APUESTA 2 — [nombre detallado]
-→ Tipo / Mercado / Cuota / Prob / EV / Categoría
-→ Proximidad línea: X.X pts — [APTA / REDUCIR 50% / BLOQUEADA]
-→ Correlación con otras apuestas: POSITIVA / NEGATIVA / NEUTRA
+→ Tipo / Mercado / Cuota / Rango mercado / Outlier
+→ Prob Real / Sanity check / EV / Categoría
+→ Filtro A (EV): PASA/FALLA | Filtro B (Prob): PASA/FALLA
+→ Proximidad/Edge: X.X pts — [estado]
+→ Correlación con otras apuestas: POSITIVA / NEGATIVA / LEVE NEG / NEUTRA
 → Argumento
 
-APUESTA 3 — [nombre detallado] (solo si EV > 0.05)
-→ Tipo / Mercado / Cuota / Prob / EV / Categoría
-→ Proximidad línea: X.X pts — [APTA / REDUCIR 50% / BLOQUEADA]
-→ Correlación con otras apuestas: POSITIVA / NEGATIVA / NEUTRA
+APUESTA 3 — [nombre detallado] (solo si cumple Filtro A Y Filtro B)
+→ Tipo / Mercado / Cuota / Rango mercado / Outlier
+→ Prob Real / Sanity check / EV / Categoría
+→ Filtro A (EV): PASA/FALLA | Filtro B (Prob): PASA/FALLA
+→ Proximidad/Edge: X.X pts — [estado]
+→ Correlación con otras apuestas: POSITIVA / NEGATIVA / LEVE NEG / NEUTRA
 → Argumento
 
 PROP BET DESTACADA — [jugador + mercado]
-→ Tipo / Cuota / Prob / EV
+→ Tipo / Cuota / Rango mercado / Outlier: SÍ/NO
+→ Prob Real / EV
+→ Filtro A (EV): PASA/FALLA | Filtro B (Prob ≥60%): PASA/FALLA
 → Promedio jugador vs línea: +X.X unidades (mínimo requerido: +1.0)
-→ Blowout risk (spread ≥10): SÍ aplica penalización / NO aplica
-→ Proyección ajustada: X.X unidades sobre/bajo línea tras penalización
-→ Correlación con apuesta principal: POSITIVA / NEGATIVA / NEUTRA
+→ Blowout risk: spread ≥10 → SÍ/NO | spread 6–9 → SÍ/NO
+→ Penalización aplicada: -X.X u. | Proyección ajustada: X.X u.
+→ Correlación con apuesta principal: POSITIVA / NEGATIVA / LEVE NEG / NEUTRA
 → Argumento
 
-⛔ Si ninguna EV > 0.05: "NO HAY VALUE HOY — NO APOSTAR"
+⛔ Si ninguna apuesta cumple Filtro A + Filtro B: "NO HAY VALUE HOY — NO APOSTAR"
 
 ───────────────────────────────────────
 2️⃣1️⃣ GESTIÓN DE BANKROLL
@@ -504,10 +608,15 @@ PROPS (menor certeza)       → máx 1% = ${formatCOP(data.bankrollAmount * 0.01
 
 REGLA: No superar 10% del bankroll en total por partido.
 REGLA: Máximo 3 apuestas simultáneas en el mismo partido.
+REGLA: ML underdog → máximo 2–3% del bankroll independientemente de la categoría.
 REGLA: Si el filtro de proximidad activa "REDUCIR 50%", aplicar ese recorte
        al monto calculado por categoría antes de apostar.
 REGLA: Si dos apuestas tienen correlación NEGATIVA, conservar solo la de
        mayor EV ajustado y descartar la otra.
+REGLA: Si correlación es LEVE NEGATIVA, reducir stake de la prop al 50%
+       del monto calculado por categoría.
+REGLA: Si una apuesta cumple solo Filtro A (no Filtro B) → reducir stake 50%.
+REGLA: Si una apuesta cumple solo Filtro B (no Filtro A) → NO APOSTAR.
 
 ───────────────────────────────────────
 2️⃣2️⃣ RESUMEN EJECUTIVO FINAL
@@ -519,11 +628,16 @@ REGLA: Si dos apuestas tienen correlación NEGATIVA, conservar solo la de
 ║ TIPO:                                    ║
 ║ MERCADO EXACTO:                          ║
 ║ CUOTA:                                   ║
+║ RANGO MERCADO:  mín X.XX — máx X.XX      ║
+║ OUTLIER:        SÍ / NO                  ║
 ║ PROBABILIDAD REAL:                       ║
+║ SANITY CHECK:   X% dif. — ACEPT./REV.    ║
 ║ EV:                                      ║
-║ PROXIMIDAD LÍNEA:   X.X pts — [estado]   ║
-║ CONFIANZA: baja / media / alta           ║
-║ CATEGORÍA: A / B / C                     ║
+║ FILTRO A (EV):  PASA / FALLA             ║
+║ FILTRO B (Prob):PASA / FALLA             ║
+║ EDGE/PROXIMIDAD:X.X pts — [estado]       ║
+║ CONFIANZA:      baja / media / alta      ║
+║ CATEGORÍA:      A / B / C                ║
 ║ MONTO:                                   ║
 ╠══════════════════════════════════════════╣
 ║       MEJOR PROP DEL PARTIDO             ║
@@ -531,11 +645,17 @@ REGLA: Si dos apuestas tienen correlación NEGATIVA, conservar solo la de
 ║ JUGADOR:                                 ║
 ║ PROP:                                    ║
 ║ CUOTA:                                   ║
+║ RANGO MERCADO:  mín X.XX — máx X.XX      ║
+║ OUTLIER:        SÍ / NO                  ║
 ║ PROBABILIDAD REAL:                       ║
 ║ EV:                                      ║
-║ MARGEN VS LÍNEA:    +X.X u. (mín. +1.0) ║
-║ BLOWOUT RISK:       SÍ / NO              ║
-║ CORRELACIÓN APUESTA PRINCIPAL: +/-/NEU   ║
+║ FILTRO A (EV):  PASA / FALLA             ║
+║ FILTRO B (Prob ≥60%): PASA / FALLA       ║
+║ MARGEN VS LÍNEA:+X.X u. (mín. +1.0)     ║
+║ BLOWOUT RISK:   SÍ / NO                  ║
+║ PENALIZACIÓN:   -X.X u. aplicada         ║
+║ PROY. AJUSTADA: X.X u. sobre/bajo línea  ║
+║ CORRELACIÓN:    +/- / LEV NEG / NEU      ║
 ║ MONTO: máx 1% = ${formatCOP(data.bankrollAmount * 0.01).padEnd(20)} ║
 ╚══════════════════════════════════════════╝`;
 };
