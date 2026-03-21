@@ -90,17 +90,19 @@ AJUSTE BASE DEL TOTAL DE JUEGOS POR CALIBRACIÓN:
 ───────────────────────────────────────
 Para CADA jugador — buscar en Sofascore o Flashscore:
 
-ÚLTIMOS 5 PARTIDOS:
+ÚLTIMOS 15 PARTIDOS:
 - Fecha · Torneo · Superficie · Ronda · Rival · Resultado (sets) · Duración (min)
 - Descanso entre partidos (horas desde el anterior)
-
-ÚLTIMOS 10 PARTIDOS:
-- Record W/L global
-- Record W/L en esta superficie
-- Record W/L en torneos de esta categoría
+- Record W/L global en esos 15 partidos
+- Record W/L en esta superficie (de esos 15)
+- Record W/L en torneos de esta categoría (de esos 15)
 - Sets ganados vs perdidos (ratio)
 - % partidos donde ganó el primer set
 - % partidos que ganó habiendo perdido el primer set (remontadas)
+
+ÚLTIMOS 15 PARTIDOS — DETALLE:
+- Fecha · Torneo · Superficie · Ronda · Rival · Resultado (sets) · Duración (min)
+- Descanso entre partidos (horas desde el anterior)
 
 RACHA ACTUAL:
 - Victorias o derrotas consecutivas
@@ -319,9 +321,25 @@ MENTALIDAD Y PRESIÓN:
 ───────────────────────────────────────
 Buscar cuotas en Bet365 / Pinnacle / Betfair Exchange / Draftkings:
 
+⚠️ REGLA DE CUOTAS OBLIGATORIA:
+Antes de calcular cualquier EV, verificar que la cuota usada
+sea el CONSENSO de mercado, no un outlier.
+
+PROCESO OBLIGATORIO:
+1. Buscar la cuota en MÍNIMO 3 casas distintas
+2. Si una cuota difiere >30% del resto → es outlier, NO usarla
+   para el cálculo base de EV
+3. Usar siempre la cuota MÁS CONSERVADORA del rango para EV base
+4. Si con cuota conservadora EV > 0.05 → apostar en la casa
+   que ofrezca la mayor cuota (mayor EV final)
+5. Si EV solo es positivo con la cuota outlier → NO APOSTAR
+6. Reportar explícitamente:
+   "Rango de mercado: X.XX a X.XX | Cuota usada (conservadora): X.XX
+    | Casa recomendada: [nombre] | Outlier detectado: SÍ/NO"
+
 MERCADO GANADOR DEL PARTIDO (1X2):
-- ${data.homeTeam}: [cuota] → prob implícita: %
-- ${data.awayTeam}: [cuota] → prob implícita: %
+- ${data.homeTeam}: [cuota] → prob implícita: % | Rango: X.XX — X.XX
+- ${data.awayTeam}: [cuota] → prob implícita: % | Rango: X.XX — X.XX
 - Margen de la casa (vig): %
 
 MERCADO HÁNDICAP DE JUEGOS (Games Handicap):
@@ -377,6 +395,36 @@ PROPS DE JUGADOR (si disponibles):
 ⚠️ IMPORTANTE: Usar el TOTAL CALIBRADO de la Sección 0 como base.
 Todos los ajustes de la Calibración Inicial ya deben estar incorporados.
 
+⚠️ CHECKLIST DE CALIBRACIÓN DE PROBABILIDAD (OBLIGATORIO):
+Antes de fijar la prob real de cada jugador, aplicar estos
+5 ajustes en orden:
+
+AJUSTE 1 — Favorito en casa / superficie dominante:
+  Si el favorito tiene win rate > 65% en esta superficie
+  → sumar +2% a su prob base
+
+AJUSTE 2 — Lesión del FAVORITO:
+  Si el favorito tiene molestia o lesión activa
+  → restar 5–10% según impacto reportado (1-10 escala)
+  → No restar más de 10% salvo lesión severa confirmada
+
+AJUSTE 3 — Estado del OUTSIDER:
+  Si el outsider viene de victoria larga (>2h) hace < 24h
+  → restar 5% de su prob base (fatiga acumulada)
+  Si el outsider lleva 3+ victorias seguidas en este torneo
+  → sumar +3% (momentum de torneo)
+
+AJUSTE 4 — Momentum reciente (últimos 15 partidos):
+  Si un jugador lleva 7+ derrotas en últimos 10 → restar 3%
+  Si un jugador lleva 8+ victorias en últimos 10 → sumar 3%
+
+AJUSTE 5 — Sanity check final OBLIGATORIO:
+  Comparar prob calculada vs consenso de mercado
+  (Betfair Exchange, cuota implícita Pinnacle).
+  Si difiere >10 puntos porcentuales → revisar modelo.
+  Reportar: "Prob modelo: X% | Prob mercado implícita: Y%
+  | Diferencia: Z% | [ACEPTABLE / REVISAR]"
+
 MÉTODO 1 — Modelo matemático de saque/resto:
   p = prob de ganar un punto al saque de J1
   q = prob de ganar un punto al saque de J2
@@ -386,14 +434,14 @@ MÉTODO 1 — Modelo matemático de saque/resto:
   Usar Hold% y Break% reales de cada jugador en esta superficie.
 
 MÉTODO 2 — Ponderación multi-factor (ajustar pesos si hay lesión):
-  - Forma reciente en superficie        → 20%
-  - H2H en esta superficie y ronda      → 15%
-  - Estadísticas de servicio            → 15%
-  - Estadísticas de resto               → 10%
-  - Fatiga y carga acumulada            → 15%
-  - Matchup de estilos                  → 10%
-  - ELO específico de superficie        → 10%
-  - Lesiones y estado físico            → 5%
+  - Forma reciente en superficie (últimos 15)  → 20%
+  - H2H en esta superficie y ronda             → 15%
+  - Estadísticas de servicio                   → 15%
+  - Estadísticas de resto                      → 10%
+  - Fatiga y carga acumulada                   → 15%
+  - Matchup de estilos                         → 10%
+  - ELO específico de superficie               → 10%
+  - Lesiones y estado físico                   → 5%
 
 MÉTODO 3 — ELO ajustado por superficie:
   - ELO J1 en [superficie] vs ELO J2 en [superficie]
@@ -402,6 +450,7 @@ MÉTODO 3 — ELO ajustado por superficie:
 RESULTADO CONSOLIDADO (ya con ajustes de Calibración Inicial aplicados):
   ${data.homeTeam} gana el partido:       X%
   ${data.awayTeam} gana el partido:       X%
+  Sanity check vs mercado:                X% dif. — [ACEPTABLE / REVISAR]
   Partido va a sets máximos:              X%
   ${data.homeTeam} gana 2-0 (o 3-0):     X%
   ${data.homeTeam} gana 2-1 (o 3-1/3-2): X%
@@ -415,45 +464,76 @@ RESULTADO CONSOLIDADO (ya con ajustes de Calibración Inicial aplicados):
 ───────────────────────────────────────
 EV = (prob_real × cuota_decimal) - 1
 
+⚠️ FILTRO DOBLE OBLIGATORIO — EV + PROBABILIDAD:
+Una apuesta solo es VÁLIDA si cumple AMBOS filtros simultáneamente.
+
+FILTRO A — EV MÍNIMO POR TIPO:
+  - Ganador partido:        EV > +0.05
+  - Ganador favorito (bajo):EV > +0.05
+  - Ganador outsider:       EV > +0.07
+  - Total juegos O/U:       EV > +0.05
+  - Hándicap juegos:        EV > +0.05
+  - Mercado sets (2-0/2-1): EV > +0.07
+  - Props aces/DF:          EV > +0.10
+
+FILTRO B — PROBABILIDAD MÍNIMA POR TIPO:
+  - Ganador favorito:       prob ≥ 60%
+  - Ganador outsider:       prob ≥ 38%
+  - Total juegos O/U:       prob ≥ 55%
+  - Hándicap juegos fav:    prob ≥ 55%
+  - Barrida 2-0 favorito:   prob ≥ 50%
+  - Sets a 3 (2-1/1-2):    prob ≥ 45%
+  - Props aces/DF:          prob ≥ 62%
+
+RESULTADO POR APUESTA:
+  ✅ Cumple A y B     → APOSTAR (categoría según EV)
+  ⚠️ Cumple solo A   → ALTO RIESGO → reducir stake 50%
+  ⚠️ Cumple solo B   → MAL PRECIO → NO APOSTAR
+  ❌ No cumple ninguno → DESCARTAR
+
+Reportar siempre:
+"Filtro A (EV): PASA/FALLA | Filtro B (Prob): PASA/FALLA
+→ Veredicto: APTA / ALTO RIESGO / MAL PRECIO / DESCARTADA"
+
 MERCADO GANADOR:
-| Apuesta         | Prob Real | Cuota | EV | ¿Valor? |
-|-----------------|-----------|-------|----|---------|
-| J1 gana partido |     %     |       |    | ✅/❌   |
-| J2 gana partido |     %     |       |    | ✅/❌   |
+| Apuesta         | Prob Real | Filtro B | Cuota | EV | Filtro A | Veredicto |
+|-----------------|-----------|----------|-------|----|----------|-----------|
+| J1 gana partido |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
+| J2 gana partido |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
 
 MERCADO SETS:
-| Apuesta     | Prob Real | Cuota | EV | ¿Valor? |
-|-------------|-----------|-------|----|---------|
-| J1 gana 2-0 |     %     |       |    | ✅/❌   |
-| J1 gana 2-1 |     %     |       |    | ✅/❌   |
-| J2 gana 2-0 |     %     |       |    | ✅/❌   |
-| J2 gana 2-1 |     %     |       |    | ✅/❌   |
+| Apuesta     | Prob Real | Filtro B | Cuota | EV | Filtro A | Veredicto |
+|-------------|-----------|----------|-------|----|----------|-----------|
+| J1 gana 2-0 |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
+| J1 gana 2-1 |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
+| J2 gana 2-0 |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
+| J2 gana 2-1 |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
 
 MERCADO JUEGOS TOTALES:
-| Apuesta          | Prob Real | Cuota | EV | ¿Valor? |
-|------------------|-----------|-------|----|---------|
-| Over X.5 juegos  |     %     |       |    | ✅/❌   |
-| Under X.5 juegos |     %     |       |    | ✅/❌   |
+| Apuesta          | Prob Real | Filtro B | Cuota | EV | Filtro A | Veredicto |
+|------------------|-----------|----------|-------|----|----------|-----------|
+| Over X.5 juegos  |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
+| Under X.5 juegos |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
 
 MERCADO PRIMER SET:
-| Apuesta           | Prob Real | Cuota | EV | ¿Valor? |
-|-------------------|-----------|-------|----|---------|
-| J1 gana 1er set   |     %     |       |    | ✅/❌   |
-| J2 gana 1er set   |     %     |       |    | ✅/❌   |
-| Tie-break 1er set |     %     |       |    | ✅/❌   |
+| Apuesta           | Prob Real | Filtro B | Cuota | EV | Filtro A | Veredicto |
+|-------------------|-----------|----------|-------|----|----------|-----------|
+| J1 gana 1er set   |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
+| J2 gana 1er set   |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
+| Tie-break 1er set |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
 
 HÁNDICAP DE JUEGOS:
-| Apuesta          | Prob Real | Cuota | EV | ¿Valor? |
-|------------------|-----------|-------|----|---------|
-| J1 -X.5 juegos   |     %     |       |    | ✅/❌   |
-| J2 +X.5 juegos   |     %     |       |    | ✅/❌   |
+| Apuesta          | Prob Real | Filtro B | Cuota | EV | Filtro A | Veredicto |
+|------------------|-----------|----------|-------|----|----------|-----------|
+| J1 -X.5 juegos   |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
+| J2 +X.5 juegos   |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
 
 PROPS:
-| Apuesta               | Prob Real | Cuota | EV | ¿Valor? |
-|-----------------------|-----------|-------|----|---------|
-| Aces Over X.5 (J1)    |     %     |       |    | ✅/❌   |
-| Aces Over X.5 (J2)    |     %     |       |    | ✅/❌   |
-| DF Over X.5 (J1 / J2) |     %     |       |    | ✅/❌   |
+| Apuesta               | Prob Real | Filtro B | Cuota | EV | Filtro A | Veredicto |
+|-----------------------|-----------|----------|-------|----|----------|-----------|
+| Aces Over X.5 (J1)    |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
+| Aces Over X.5 (J2)    |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
+| DF Over X.5 (J1 / J2) |     %     | ✅/❌    |       |    | ✅/❌    | APTA/DESC |
 
 ───────────────────────────────────────
 ⚠️ FILTROS ANTI-ERROR OBLIGATORIOS (aplicar ANTES de confirmar cualquier apuesta)
@@ -466,14 +546,27 @@ FILTRO 0 — BLOQUEOS AUTOMÁTICOS POR CALIBRACIÓN INICIAL
   → Under juegos: solo válido si margen > 3.5 juegos tras calibración ⛔
   → EV mínimo requerido para cualquier apuesta sube a 0.12 (en vez de 0.05)
 
-FILTRO 1 — PROXIMIDAD DE LÍNEA EN TOTALES DE JUEGOS (umbrales reforzados)
-  Usar el TOTAL CALIBRADO (con ajustes de Sección 0) para calcular proximidad.
+FILTRO 1 — PROXIMIDAD DE LÍNEA EN TOTALES DE JUEGOS
+⚠️ ESTE FILTRO APLICA ÚNICAMENTE A MERCADOS DE TOTAL (OVER/UNDER JUEGOS).
+   NUNCA A HÁNDICAP DE JUEGOS NI A MERCADO GANADOR.
 
+  Usar el TOTAL CALIBRADO (con ajustes de Sección 0):
   → Calcular: |total_calibrado - linea_OU|
   → Si la diferencia es < 3.0 juegos → REDUCIR stake al 50%
   → Si la diferencia es < 1.5 juegos → BLOQUEADA
   → Si la diferencia es < 0.5 juegos → BLOQUEADA + ALERTA MÁXIMA ⛔
-  → Reportar: "Proximidad: X.X juegos — [APTA / REDUCIR 50% / BLOQUEADA]"
+  → Reportar: "Proximidad O/U: X.X juegos — [APTA / REDUCIR 50% / BLOQUEADA]"
+
+  Para HÁNDICAP DE JUEGOS — usar filtro de EDGE:
+  → Edge = |diferencial_proyectado - handicap_linea|
+  → Si edge < 1.5 juegos → NO APOSTAR (insuficiente)
+  → Si edge 1.5–3.0 juegos → APTA con stake categoría C
+  → Si edge > 3.0 juegos → APTA con stake completo según categoría EV
+  → Reportar: "Edge hándicap: X.X juegos — [INSUFICIENTE / APTA-C / APTA]"
+
+  Para MERCADO GANADOR:
+  → No aplica filtro de proximidad.
+    El control es exclusivamente vía EV, calibración de prob y Filtro Doble.
 
   REGLA ADICIONAL UNDER:
   → Si ALERTA TRAMPA R1 activa: agregar +2.0 juegos adicionales al total
@@ -484,16 +577,31 @@ FILTRO 2 — CORRELACIÓN ENTRE APUESTAS DEL MISMO PARTIDO
   Correlaciones NEGATIVAS (incompatibles — nunca recomendar juntas):
   - Under juegos totales + J1 gana 2-1 o J2 gana 2-1
   - Over juegos totales + J1 gana 2-0 o J2 gana 2-0
-  - Ganador con cuota baja + Over total de juegos
+  - Ganador con cuota baja (favorito claro) + Over total de juegos
 
   Correlaciones POSITIVAS (compatibles):
   - Under juegos + barrida 2-0 de cualquier jugador
   - Over juegos + partido va a 3 sets
-  - J1 gana + J1 gana primer set
-  - Over aces J1 + Under juegos (si J1 es ace-machine)
+  - J1 gana partido + J1 gana primer set
+  - Over aces J1 + Under juegos (si J1 es ace-machine con saque dominante)
 
-  → Para cada par declarar: "Correlación: POSITIVA / NEGATIVA / NEUTRA"
-  → Si es NEGATIVA → conservar solo la de mayor EV ajustado
+  TABLA DE CORRELACIÓN HÁNDICAP + PROPS (OBLIGATORIA):
+  | Situación                                 | Correlación    | Acción             |
+  |-------------------------------------------|----------------|--------------------|
+  | Hándicap fav + Over aces fav              | POSITIVA ✅    | Apta combinación   |
+  | Hándicap fav + Under juegos totales       | POSITIVA ✅    | Apta combinación   |
+  | Hándicap fav + Over juegos totales        | NEGATIVA ❌    | Eliminar una       |
+  | Ganador fav + Over aces fav               | POSITIVA ✅    | Apta combinación   |
+  | Ganador fav + Over juegos totales         | Leve neg ⚠️    | Reducir prop 50%   |
+  | Under juegos + Over aces outsider         | Leve neg ⚠️    | Reducir prop 50%   |
+  | Outsider gana + Over juegos totales       | POSITIVA ✅    | Apta combinación   |
+
+  → Para correlación "Leve negativa ⚠️": reducir stake de la prop al 50%.
+  → Para correlación NEGATIVA ❌: eliminar la apuesta de MENOR EV ajustado.
+
+  → Para cada par declarar:
+    "Correlación: POSITIVA / NEGATIVA / LEVE NEG / NEUTRA
+    → [apta / reducir prop 50% / incompatible]"
 
 FILTRO 3 — VALIDACIÓN SET HÁNDICAP -1.5 (BARRIDA DEL FAVORITO)
   Antes de recomendar Set -1.5 del favorito, verificar TODAS:
@@ -525,36 +633,43 @@ FILTRO 4 — MARGEN MÍNIMO EN PROPS DE ACES Y DOBLES FALTAS
 - Nivel de certeza del modelo: ALTO / MEDIO / BAJO
 
 ───────────────────────────────────────
-1️⃣5️⃣ TOP APUESTAS CON VALOR (EV > 0.05 — o > 0.12 si ALERTA TRAMPA R1 activa)
+1️⃣5️⃣ TOP APUESTAS CON VALOR (EV > umbral activo + Prob mínima cumplida)
 ───────────────────────────────────────
 APUESTA 1 — [nombre detallado]
 → Tipo: Ganador / Sets / Juegos / Hándicap / Prop
 → Mercado: [descripción exacta]
-→ Cuota: [decimal]
-→ Prob Real: %
+→ Cuota usada: [decimal] | Rango mercado: [mín — máx] | Outlier: SÍ/NO
+→ Prob Real: % | Sanity check vs mercado: X% dif. — [ACEPTABLE / REVISAR]
 → EV: +X.XX
 → Categoría: A / B / C
-→ Proximidad línea: X.X juegos — [APTA / REDUCIR 50% / BLOQUEADA]
-→ Filtro 0 (TRAMPA R1): [PASÓ / BLOQUEADA]
-→ Filtro 3 (Set -1.5): [PASÓ / BLOQUEADA] (si aplica)
-→ Correlación con otras apuestas: POSITIVA / NEGATIVA / NEUTRA
+→ Filtro A (EV):         PASA / FALLA
+→ Filtro B (Prob):       PASA / FALLA
+→ Filtro 0 (TRAMPA R1):  PASÓ / BLOQUEADA
+→ Filtro 1 (Proximidad): X.X juegos — [APTA / REDUCIR 50% / BLOQUEADA] (si aplica O/U)
+→ Filtro 1 (Edge hcap):  X.X juegos — [INSUFICIENTE / APTA-C / APTA] (si aplica hándicap)
+→ Filtro 3 (Set -1.5):   PASÓ / BLOQUEADA (si aplica)
+→ Correlación con otras apuestas: POSITIVA / NEGATIVA / LEVE NEG / NEUTRA
 → Argumento principal (2-3 líneas)
 
 APUESTA 2 — [nombre detallado]
-→ Tipo / Mercado / Cuota / Prob / EV / Categoría
-→ Proximidad línea: X.X juegos — [APTA / REDUCIR 50% / BLOQUEADA]
-→ Filtro 0 (TRAMPA R1): [PASÓ / BLOQUEADA]
-→ Correlación con Apuesta 1: POSITIVA / NEGATIVA / NEUTRA
+→ Tipo / Mercado / Cuota / Rango mercado / Outlier
+→ Prob Real / Sanity check / EV / Categoría
+→ Filtro A (EV): PASA/FALLA | Filtro B (Prob): PASA/FALLA
+→ Filtro 0 (TRAMPA R1): PASÓ / BLOQUEADA
+→ Proximidad/Edge: X.X juegos — [estado]
+→ Correlación con Apuesta 1: POSITIVA / NEGATIVA / LEVE NEG / NEUTRA
 → Argumento
 
-APUESTA 3 — [nombre detallado] (solo si EV > umbral activo)
-→ Tipo / Mercado / Cuota / Prob / EV / Categoría
-→ Proximidad línea: X.X juegos — [APTA / REDUCIR 50% / BLOQUEADA]
-→ Filtro 0 (TRAMPA R1): [PASÓ / BLOQUEADA]
-→ Correlación con Apuestas 1 y 2: POSITIVA / NEGATIVA / NEUTRA
+APUESTA 3 — [nombre detallado] (solo si cumple Filtro A Y Filtro B)
+→ Tipo / Mercado / Cuota / Rango mercado / Outlier
+→ Prob Real / Sanity check / EV / Categoría
+→ Filtro A (EV): PASA/FALLA | Filtro B (Prob): PASA/FALLA
+→ Filtro 0 (TRAMPA R1): PASÓ / BLOQUEADA
+→ Proximidad/Edge: X.X juegos — [estado]
+→ Correlación con Apuestas 1 y 2: POSITIVA / NEGATIVA / LEVE NEG / NEUTRA
 → Argumento
 
-⛔ Si ninguna pasa todos los filtros con EV > umbral: "NO HAY VALUE HOY — NO APOSTAR"
+⛔ Si ninguna pasa todos los filtros con EV > umbral activo: "NO HAY VALUE HOY — NO APOSTAR"
 
 ───────────────────────────────────────
 1️⃣6️⃣ GESTIÓN DE BANKROLL
@@ -567,6 +682,7 @@ CATEGORÍA C — EV 0.05-0.07 → 1.5% = ${formatCOP(data.bankrollAmount * 0.015
 
 REGLA: No superar 10% del bankroll en total por partido.
 REGLA: Máximo 2 apuestas simultáneas en el mismo partido de tenis.
+REGLA: Outsider ML → máximo 2–3% del bankroll independientemente de la categoría.
 REGLA: Si CONFIANZA MEDIA (1-2 alertas) → reducir TODOS los stakes al 50%.
 REGLA: Si CONFIANZA BAJA (3+ alertas) → EV mínimo requerido sube a 0.15
        y stakes máximos reducidos al 50% de la categoría.
@@ -574,6 +690,10 @@ REGLA: Si el filtro de proximidad activa "REDUCIR 50%", aplicar ese
        recorte al monto calculado por categoría antes de apostar.
 REGLA: Si dos apuestas tienen correlación NEGATIVA, conservar solo
        la de mayor EV ajustado y descartar la otra.
+REGLA: Si correlación es LEVE NEGATIVA, reducir stake de la prop al 50%
+       del monto calculado por categoría.
+REGLA: Si una apuesta cumple solo Filtro A (no Filtro B) → reducir stake 50%.
+REGLA: Si una apuesta cumple solo Filtro B (no Filtro A) → NO APOSTAR.
 
 ───────────────────────────────────────
 1️⃣7️⃣ RESUMEN EJECUTIVO FINAL
@@ -595,13 +715,18 @@ REGLA: Si dos apuestas tienen correlación NEGATIVA, conservar solo
 ║ TIPO:                                        ║
 ║ MERCADO EXACTO:                              ║
 ║ CUOTA:                                       ║
+║ RANGO MERCADO:   mín X.XX — máx X.XX         ║
+║ OUTLIER:         SÍ / NO                     ║
 ║ PROBABILIDAD REAL:                           ║
+║ SANITY CHECK:    X% dif. — ACEPT./REV.       ║
 ║ EV:                                          ║
-║ PROXIMIDAD LÍNEA:   X.X j — [estado]        ║
-║ FILTRO TRAMPA R1:   PASÓ / BLOQUEADA         ║
-║ CORRELACIÓN:        POSITIVA/NEG/NEUTRA      ║
-║ CONFIANZA: baja / media / alta               ║
-║ CATEGORÍA: A / B / C                         ║
+║ FILTRO A (EV):   PASA / FALLA                ║
+║ FILTRO B (Prob): PASA / FALLA                ║
+║ FILTRO TRAMPA R1:PASÓ / BLOQUEADA            ║
+║ PROXIMIDAD/EDGE: X.X j — [estado]            ║
+║ CORRELACIÓN:     POSITIVA/NEG/LEVE/NEU       ║
+║ CONFIANZA:       baja / media / alta         ║
+║ CATEGORÍA:       A / B / C                   ║
 ║ MONTO:                                       ║
 ╠══════════════════════════════════════════════╣
 ║       SEGUNDA APUESTA (si hay valor)         ║
@@ -609,11 +734,16 @@ REGLA: Si dos apuestas tienen correlación NEGATIVA, conservar solo
 ║ APUESTA:                                     ║
 ║ TIPO:                                        ║
 ║ CUOTA:                                       ║
+║ RANGO MERCADO:   mín X.XX — máx X.XX         ║
+║ OUTLIER:         SÍ / NO                     ║
 ║ PROBABILIDAD REAL:                           ║
+║ SANITY CHECK:    X% dif. — ACEPT./REV.       ║
 ║ EV:                                          ║
-║ PROXIMIDAD LÍNEA:   X.X j — [estado]        ║
-║ FILTRO TRAMPA R1:   PASÓ / BLOQUEADA         ║
-║ CORRELACIÓN CON AP1: POSITIVA/NEG/NEUTRA     ║
+║ FILTRO A (EV):   PASA / FALLA                ║
+║ FILTRO B (Prob): PASA / FALLA                ║
+║ FILTRO TRAMPA R1:PASÓ / BLOQUEADA            ║
+║ PROXIMIDAD/EDGE: X.X j — [estado]            ║
+║ CORRELACIÓN CON AP1: POSITIVA/NEG/LEVE/NEU   ║
 ║ MONTO:                                       ║
 ╚══════════════════════════════════════════════╝`;
 };
