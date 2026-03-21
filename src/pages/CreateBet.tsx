@@ -63,7 +63,7 @@ export function CreateBet() {
   const [pendingData, setPendingData] = useState<BetFormData | null>(null);
   const [showAIPromptModal, setShowAIPromptModal] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
-  const [sliderPercentage, setSliderPercentage] = useState(1);
+  const [sliderPercentage, setSliderPercentage] = useState(0);
 
   const getRecommendedAmount = (percentage: number) => {
     if (!bankroll) return 0;
@@ -72,10 +72,18 @@ export function CreateBet() {
   };
 
   const getCategoryFromPercentage = (percentage: number): 'A' | 'B' | 'C' | null => {
-    if (percentage >= 5) return 'A';
+    if (percentage >= 4.5) return 'A';
     if (percentage >= 3) return 'B';
-    if (percentage >= 1.5) return 'C';
-    return null;
+    return 'C'; // 0%, 0.5%, 1%, 1.5% all = C
+  };
+
+  const getConfidenceFromPercentage = (percentage: number): number => {
+    // 1.5% = 1 star, 2% = 2 stars, 3% = 3 stars, 4% = 4 stars, 5% = 5 stars
+    if (percentage >= 5) return 5;
+    if (percentage >= 4) return 4;
+    if (percentage >= 3) return 3;
+    if (percentage >= 2) return 2;
+    return 1;
   };
 
   useEffect(() => {
@@ -383,8 +391,8 @@ export function CreateBet() {
         {/* Percentage of Bankroll */}
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-1">
-            Porcentaje del Bankroll
-            <span className="text-gold ml-2">{watchPercentage}%</span>
+            Nivel de Confianza
+            <span className="text-gold ml-2 font-bold">{watchPercentage}%</span>
           </label>
           <input
             type="range"
@@ -399,29 +407,45 @@ export function CreateBet() {
             }}
             className="w-full h-3 bg-gray-700 rounded-lg appearance-none cursor-pointer"
           />
-          <div className="flex justify-between text-xs text-gray-500 mt-1 overflow-x-auto">
-            <span>0%</span>
-            <span>0.5%</span>
-            <span>1%</span>
-            <span>1.5%</span>
-            <span>2%</span>
-            <span>2.5%</span>
-            <span>3%</span>
-            <span>3.5%</span>
-            <span>4%</span>
-            <span>4.5%</span>
-            <span>5%</span>
+
+          {/* Confidence labels */}
+          <div className="flex justify-between text-xs mt-1">
+            <div className="text-center">
+              <div className="text-gray-500">0%</div>
+            </div>
+            <div className="text-center">
+              <div className="text-blue-400 font-medium">🔒 Baja</div>
+              <div className="text-gray-500">1.5%</div>
+            </div>
+            <div className="text-center">
+              <div className="text-yellow-400 font-medium">⚡ Media</div>
+              <div className="text-gray-500">3%</div>
+            </div>
+            <div className="text-center">
+              <div className="text-green-400 font-medium">🔥 Alta</div>
+              <div className="text-gray-500">5%</div>
+            </div>
           </div>
-          
+
           {/* Category indicator */}
-          {watchPercentage > 0 && (
-            <div className="mt-2 flex items-center justify-center">
-              <span className={`px-3 py-1 rounded-full text-sm font-bold ${
-                watchPercentage >= 5 ? 'bg-green-900/50 text-green-400' :
+          {watchPercentage >= 0 && (
+            <div className="mt-3 flex items-center justify-center gap-3">
+              <span className={`px-4 py-1.5 rounded-full text-sm font-bold ${
+                watchPercentage >= 4.5 ? 'bg-green-900/50 text-green-400' :
                 watchPercentage >= 3 ? 'bg-yellow-900/50 text-yellow-400' :
                 'bg-blue-900/50 text-blue-400'
               }`}>
                 Categoría {getCategoryFromPercentage(watchPercentage) || '-'}
+              </span>
+              <span className="text-gold text-lg">
+                {'★'.repeat(getConfidenceFromPercentage(watchPercentage))}{'☆'.repeat(5 - getConfidenceFromPercentage(watchPercentage))}
+              </span>
+              <span className={`text-xs px-2 py-1 rounded ${
+                watchPercentage >= 5 ? 'bg-green-900/30 text-green-300' :
+                watchPercentage >= 3 ? 'bg-yellow-900/30 text-yellow-300' :
+                'bg-blue-900/30 text-blue-300'
+              }`}>
+                {watchPercentage >= 5 ? 'Alta' : watchPercentage >= 3 ? 'Media' : 'Baja'}
               </span>
             </div>
           )}
