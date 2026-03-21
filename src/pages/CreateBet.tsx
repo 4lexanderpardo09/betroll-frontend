@@ -67,7 +67,8 @@ export function CreateBet() {
 
   const getRecommendedAmount = (percentage: number) => {
     if (!bankroll) return 0;
-    return Math.round(bankroll.currentAmount * (percentage / 100));
+    // Use initialAmount (fixed base) not currentAmount (fluctuates with wins/losses)
+    return Math.round(bankroll.initialAmount * (percentage / 100));
   };
 
   const getCategoryFromPercentage = (percentage: number): 'A' | 'B' | 'C' | null => {
@@ -214,8 +215,17 @@ export function CreateBet() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-white">Nueva Apuesta</h1>
         {bankroll && (
-          <div className="text-sm text-gray-400">
-            Bankroll: <span className="text-gold font-bold">{formatCOP(bankroll.currentAmount)}</span>
+          <div className="text-sm text-gray-400 space-y-1">
+            <div>
+              Bankroll base: <span className="text-gold font-bold">{formatCOP(bankroll.initialAmount)}</span>
+              <span className="text-gray-500 ml-2">(tu inversión inicial)</span>
+            </div>
+            <div>
+              Bankroll actual: <span className="text-gold font-bold">{formatCOP(bankroll.currentAmount)}</span>
+              <span className={`ml-2 ${bankroll.currentAmount >= bankroll.initialAmount ? 'text-green-500' : 'text-red-500'}`}>
+                ({bankroll.currentAmount >= bankroll.initialAmount ? '+' : ''}{formatCOP(bankroll.currentAmount - bankroll.initialAmount)})
+              </span>
+            </div>
           </div>
         )}
       </div>
