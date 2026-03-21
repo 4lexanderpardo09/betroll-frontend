@@ -10,6 +10,7 @@ import { useBankrollStore } from '../store/bankrollStore';
 import { formatCOP } from '../utils/formatCOP';
 import { generatePrompt } from '../utils/prompts';
 import { Sport, BetType } from '../api/bets';
+import { toast, ToastContainer } from '../hooks/useToast';
 
 // Workaround for DatePicker type issue
 const DatePickerWrapper = DatePicker as unknown as React.ComponentType<any>;
@@ -64,7 +65,6 @@ export function CreateBet() {
   const [showAIPromptModal, setShowAIPromptModal] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [sliderPercentage, setSliderPercentage] = useState(0);
-
   const getRecommendedAmount = (percentage: number) => {
     if (!bankroll) return 0;
     // Use initialAmount (fixed base) not currentAmount (fluctuates with wins/losses)
@@ -180,7 +180,8 @@ export function CreateBet() {
 
   const generateAIPrompt = () => {
     const formData = watch();
-    const bankrollAmount = bankroll?.currentAmount || 0;
+    // Always use initialAmount (fixed base), not currentAmount (fluctuates)
+    const bankrollAmount = bankroll?.initialAmount || 0;
     
     const sportLabel = SPORTS.find(s => s.value === formData.sport)?.label || formData.sport || 'Otro';
     const formattedDate = eventDate ? eventDate.toLocaleString('es-CO', { 
@@ -210,9 +211,9 @@ export function CreateBet() {
   const copyPromptToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(generatedPrompt);
-      alert('¡Prompt copiado al portapapeles! Pégalo en tu chat de IA.');
+      toast('¡Prompt copiado al portapapeles!');
     } catch {
-      alert('Error al copiar. Por favor selecciona y copia el texto manualmente.');
+      toast('Error al copiar. Por favor selecciona y copia el texto manualmente.', 'error');
     }
   };
 
@@ -583,6 +584,7 @@ export function CreateBet() {
           </div>
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 }
